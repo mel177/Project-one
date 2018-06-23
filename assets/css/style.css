@@ -26,10 +26,17 @@ div#map {
     z-index:0;
 }
 
-div#legend {
+div#lg1 {
     position:absolute;
     left:10px;
     top: 10px;
+    z-index:3;
+    background: rgba(33, 33, 33, 0.8);
+}
+div#lg2 {
+    position:absolute;
+    left:10px;
+    top: 300px;
     z-index:3;
     background: rgba(33, 33, 33, 0.8);
 }
