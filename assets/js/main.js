@@ -74,8 +74,8 @@ function initMap(lat, lng) {
     }
 
     //  Click event to place markers on map
-    $(document).on("click", '.legend', setMarkers);
-    $(document).on("click", '#lg3', deleteMarkers);
+    $(".legend").off("click").on("click", setMarkers);
+    $("#lg3").on("click", deleteAllMarkers);
 
    
 }
@@ -124,6 +124,8 @@ function zomato(x) {
 }// Closes out the Zomato function
 
 function placeMarkers(x) {
+
+
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
 
@@ -141,6 +143,7 @@ function placeMarkers(x) {
                 content: contentString
             });
 
+
             //  Creates a new marker on the map
             var marker = new google.maps.Marker({
                 //  Pulls the lat and long from declared variable
@@ -148,11 +151,13 @@ function placeMarkers(x) {
                 //  Defines the map as the google.maps window
                 map: map,
                 //  Gives the popper a name
-                title: snapshot.val().name
+                title: snapshot.val().name, 
+                //  Gives marker id
+                id: cid
             });
 
+            // Push info to markers array for population
             markers.push(marker);
-            
 
             //  creates listener for the click event of icon
             marker.addListener('click', function () {
@@ -160,37 +165,58 @@ function placeMarkers(x) {
                 infowindow.open(map, marker);
                 //  closes out the popup after 5 seconds
                 setTimeout(close, 3000);
-            });
 
+
+            //  close the popups after an interval
             function close() {
                 infowindow.close(map, marker);
             }
-        })
+            });
+
+            
+        }) 
     }
+    console.log(markers);
 }
 
 function setMarkers() {
+    //  clear the markers array
+    deleteMarkers();
+
     //  Get the cid number from the selected button
-    cid = $(this).attr('data-cid');
+    cid = parseInt($(this).attr('data-cid'));
 
-    // for(var i = 0; i < searchArr.length; i++){
-    //     if(cid == searchArr[i]){
-    //         searchArr.splice(i, 1); 
-    //     } else {
-    //     //  Pushes the selected item to search array
-    //       
-    //     }
-    // } 
+    //  Check to see if these search params have already
+    //  been set. disable if they have been
+    //  Checking to see if array includes  id nuymber
+    if(!searchArr.includes(cid)){
+        //  if it doesn't, push data to search array
+        searchArr.push(cid);
+        //  then build the markers
+        build();
+        //  If there is a duplicate, we must remove, then splice out
+    } else {
+        //  first search for duplicates to catch all possible renditions
+        duplicateArr(searchArr);   
+        //  next get the index of the id number to splice from array 
+        let index = searchArr.indexOf(cid);
+        //  splice the duplicate from the array at it's index
+        searchArr.splice(index, 1);
+        //  then rebuild markers without the duplicate
+        build();
+    }
+}
 
-    searchArr.push(cid);
-
-    for (var i = 0; i < searchArr.length; i++) {
-
+//  Build markers
+function build(){
+for (var i = 0; i < searchArr.length; i++) {
         //  Pull the lat/lon/lng from the firebase database
         database.ref('location').on('value', function (snapshot) {
             lat = snapshot.val().lat;
             lon = snapshot.val().lng;
             lng = lon;
+            
+            
 
             //  Create variable holding the search url including parameters
             let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + searchArr[i] + "&radius=10&sort=real_distance&count=5";
@@ -209,10 +235,11 @@ function setMarkers() {
             })
 
         });//closes out firebase
-
+        
+    
         //  Call the array posting method
         placeMarkers(searchArr[i]);
-        }
+    }
 }
 
 // Sets the map on all markers in the array.
@@ -232,9 +259,25 @@ function showMarkers() {
     setMapOnAll(map);
 }
 
-// Deletes all markers in the array by removing references to them.
+// Deletes markers in the array by removing references to them.
 function deleteMarkers() {
+    clearMarkers();
+    markers = [];
+}
+
+// Delete all markers in array and references
+function deleteAllMarkers() {
     clearMarkers();
     markers = [];
     searchArr = [];
 }
+
+//  Function removes duplicates from arrays
+function duplicateArr(arr) {
+    let unique_array = Array.from(new Set(arr))
+    return unique_array
+}
+
+
+
+
