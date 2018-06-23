@@ -36,7 +36,14 @@ div#lg1 {
 div#lg2 {
     position:absolute;
     left:10px;
-    top: 300px;
+    top: 200px;
+    z-index:3;
+    background: rgba(33, 33, 33, 0.8);
+}
+div#lg3 {
+    position:absolute;
+    left:10px;
+    top: 400px;
     z-index:3;
     background: rgba(33, 33, 33, 0.8);
 }

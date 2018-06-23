@@ -20,7 +20,7 @@ let lon = "";
 let lng = "";
 let cid = "";
 let searchArr = [];
-
+var markers = [];
 
 // data object to store click location info
 var data = {
@@ -61,8 +61,9 @@ function initMap(lat, lng) {
             })
 
             infoWindow.setPosition(pos);
-            infoWindow.setContent('Location found.');
+            infoWindow.setContent('Your Location');
             infoWindow.open(map);
+
             map.setCenter(pos);
         }, function () { 
             handleLocationError(true, infoWindow, map.getCenter());
@@ -74,6 +75,7 @@ function initMap(lat, lng) {
 
     //  Click event to place markers on map
     $(document).on("click", '.legend', setMarkers);
+    $(document).on("click", '#lg3', deleteMarkers);
 
    
 }
@@ -149,6 +151,9 @@ function placeMarkers(x) {
                 title: snapshot.val().name
             });
 
+            markers.push(marker);
+            
+
             //  creates listener for the click event of icon
             marker.addListener('click', function () {
                 //  open the info window for selected icon
@@ -165,11 +170,18 @@ function placeMarkers(x) {
 }
 
 function setMarkers() {
-
     //  Get the cid number from the selected button
     cid = $(this).attr('data-cid');
 
-    //  Pushes the selected item to search array
+    // for(var i = 0; i < searchArr.length; i++){
+    //     if(cid == searchArr[i]){
+    //         searchArr.splice(i, 1); 
+    //     } else {
+    //     //  Pushes the selected item to search array
+    //       
+    //     }
+    // } 
+
     searchArr.push(cid);
 
     for (var i = 0; i < searchArr.length; i++) {
@@ -200,5 +212,29 @@ function setMarkers() {
 
         //  Call the array posting method
         placeMarkers(searchArr[i]);
+        }
+}
+
+// Sets the map on all markers in the array.
+function setMapOnAll(map) {
+    for (var i = 0; i < markers.length; i++) {
+        markers[i].setMap(map);
     }
+}
+
+// Removes the markers from the map, but keeps them in the array.
+function clearMarkers() {
+    setMapOnAll(null);
+}
+
+// Shows any markers currently in the array.
+function showMarkers() {
+    setMapOnAll(map);
+}
+
+// Deletes all markers in the array by removing references to them.
+function deleteMarkers() {
+    clearMarkers();
+    markers = [];
+    searchArr = [];
 }
