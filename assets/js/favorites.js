@@ -47,11 +47,11 @@ function toggleActive() {
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
-    $('#map').hide();
+    // $('#map').hide();
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        $('.favorites').append(`<h2>Favorites</h2>`);
+        $('.favorites').append(`<h2>&nbsp;</h2>`);
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
@@ -71,7 +71,7 @@ function drawFlags() {
         hideFlags();
         favActive = false;
         console.log(favActive);
-        $('#map').show();
+        // $('#map').show();
     }
 }
 
@@ -94,4 +94,5 @@ function hideFlags() {
 $(document).on("click", '#reset', restoreDefaults);
 $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
-$(document).on("click", '.fav-nav', drawFlags);
+$(document).on("click", '#FüdMeh', drawFlags);
+$(document).on("click", '#fudmeh', drawFlags);
