@@ -74,8 +74,8 @@ function initMap(lat, lng) {
     }
 
     //  Click event to place markers on map
-    $(document).on("click", '.legend', setMarkers);
-    $(document).on("click", '#lg3', deleteMarkers);
+    $(".legend").off("click").on("click", setMarkers);
+    $("#lg3").on("click", deleteAllMarkers);
 
    
 }
@@ -156,6 +156,7 @@ function placeMarkers(x) {
                 id: cid
             });
 
+            // Push info to markers array for population
             markers.push(marker);
 
             //  creates listener for the click event of icon
@@ -164,13 +165,18 @@ function placeMarkers(x) {
                 infowindow.open(map, marker);
                 //  closes out the popup after 5 seconds
                 setTimeout(close, 3000);
-            });
 
+
+            //  close the popups after an interval
             function close() {
                 infowindow.close(map, marker);
             }
+            });
+
+            
         }) 
     }
+    console.log(markers);
 }
 
 function setMarkers() {
@@ -180,14 +186,23 @@ function setMarkers() {
     //  Get the cid number from the selected button
     cid = parseInt($(this).attr('data-cid'));
 
+    //  Check to see if these search params have already
+    //  been set. disable if they have been
+    //  Checking to see if array includes  id nuymber
     if(!searchArr.includes(cid)){
+        //  if it doesn't, push data to search array
         searchArr.push(cid);
+        //  then build the markers
         build();
+        //  If there is a duplicate, we must remove, then splice out
     } else {
-        duplicateArr(searchArr);    
+        //  first search for duplicates to catch all possible renditions
+        duplicateArr(searchArr);   
+        //  next get the index of the id number to splice from array 
         let index = searchArr.indexOf(cid);
-        console.log("index: " + index)
+        //  splice the duplicate from the array at it's index
         searchArr.splice(index, 1);
+        //  then rebuild markers without the duplicate
         build();
     }
 }
@@ -244,10 +259,17 @@ function showMarkers() {
     setMapOnAll(map);
 }
 
-// Deletes all markers in the array by removing references to them.
+// Deletes markers in the array by removing references to them.
 function deleteMarkers() {
     clearMarkers();
     markers = [];
+}
+
+// Delete all markers in array and references
+function deleteAllMarkers() {
+    clearMarkers();
+    markers = [];
+    searchArr = [];
 }
 
 //  Function removes duplicates from arrays
@@ -255,5 +277,7 @@ function duplicateArr(arr) {
     let unique_array = Array.from(new Set(arr))
     return unique_array
 }
+
+
 
 
