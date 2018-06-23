@@ -7,7 +7,14 @@ html, body {
 body {
     font-family: 'Courier New', Courier, monospace;
     color: #60c4f7;
-    background-color: #333333
+    background-color: #333333;
+    min-height: 2000px;
+    padding-top: 70px
+
+}
+
+.jumbotron {
+    background: rgba(33, 33, 33, 0.8);
 }
 
 #map {
@@ -133,14 +140,32 @@ body {
     filter: alpha(opacity=100) !important
 }
 
-grayflag {
+
+.flags {
+	display: flex;
+    flex-wrap: wrap;
+	padding: 5px;
+	margin: 5px;
+	display: flex;
+    flex-direction: column-row;
+    justify-content: left;
+    text-align: right;    
+}
+
+
+.inactive {
     filter: gray; /* IE6-9 */
     -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
     filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
   }
+
+.icon {
+    width: 30px;
+    height: 20px;
+}
   
   /* Disable grayscale on hover */
-grayflag:hover {
+.inactive:hover {
     -webkit-filter: grayscale(0);
     filter: none;
   }
