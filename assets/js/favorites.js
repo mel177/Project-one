@@ -15,7 +15,7 @@ function restoreDefaults() {
     setFav = false;
 }
 
-// --------------------------------------------------------------------- <restore defaults>
+// --------------------------------------------------------------------- <save favorites>
 function addFavorite() {
 
     let id = $(this).attr('id')
@@ -47,6 +47,7 @@ function toggleActive() {
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
+    $('#map').hide();
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
@@ -70,6 +71,7 @@ function drawFlags() {
         hideFlags();
         favActive = false;
         console.log(favActive);
+        $('#map').show();
     }
 }
 

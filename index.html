@@ -52,14 +52,11 @@
       </div>
     </nav>
   <!-- Nav Bar End-->
-  <div class="restaurants-map">
-    <div class="google-map"></div>
-    <div class="google-map-legend col-sm-2 hidden-xs"></div>
-  </div>
-
-    <main role="main" class="container">
+  
+    
+    <main role="main" class="container w-100 h-100 col-sm-12 w">
         <!-- Map Start -->
-        
+        <div class="w-100 h-100 col-sm-12 w" id="map"></div>    
         <!-- Map End -->
         <!-- Favorites Menu Start-->
         <div class="jumbotron">
@@ -77,7 +74,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCibwKW2p8ZMMIaOBCHDPJcgNhlYyt1SU0"></script>    
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCibwKW2p8ZMMIaOBCHDPJcgNhlYyt1SU0&callback=initMap" async defer></script>
     <!-- Our Stuff -->
     <script src="assets/js/cusines.js"></script>
     <script src="assets/js/favorites.js"></script>
