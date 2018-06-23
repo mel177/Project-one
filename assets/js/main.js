@@ -10,12 +10,16 @@ var config = {
     storageBucket: "",
     messagingSenderId: "426120982640"
 };
+
 firebase.initializeApp(config);
+
 var database = firebase.database(); // Create a variable to reference the database
 
 //  Create variables for latitude and longitude
 let lat = "";
 let lon = "";
+let lng = "";
+let cityCode = '';
 
 // data object to store click location info
 var data = {
@@ -31,11 +35,13 @@ var data = {
 database.ref('location').on('value', function (snapshot) {
     lat = snapshot.val().lat;
     lon = snapshot.val().lng;
+    lng = lon;
+
 
     //  Create variable holding the search url including parameters
-    let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=chinese&radius=10&sort=real_distance&count=25";
+    let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + cityCode + "&radius=10&sort=real_distance&count=10";
 
-    //  AJAX call to Zomato
+    //  Create Ajax call
     $.ajax({
         url: queryURL,
         method: 'GET',
@@ -50,45 +56,48 @@ database.ref('location').on('value', function (snapshot) {
 
     //  Create function to handle zomato JSON
     function zomato(x) {
-        //  Console log the zomato JSON to manipulate
-        console.log(x);
 
         //  Iterate through the JSON retrived from zomato
         //  Push zomato JSON to firebase
         for (var i = 0; i < x.results_shown; i++) {
-            database.ref('fuudMeh').push({
-                name: x.restaurants[i].restaurant.name,
-                img: x.restaurants[i].restaurant.photos_url,
-                url: x.restaurants[i].restaurant.url,
-                location: x.restaurants[i].restaurant.location,
-                id: x.restaurants[i].restaurant.id,
-                cuisines: x.restaurants[i].restaurant.cuisines
-            })
-
+            //  Creates a restaurant variable to hold data sent to firebase
             var restaurant = {
-                category: x.restaurants[i].restaurant.cuisines,
-                lat: x.restaurants[i].restaurant.location.latitude,
-                lng: x.restaurants[i].restaurant.location.longitude,
-                object: {
-                    name: x.restaurants[i].restaurant.name,
-                    address: x.restaurants[i].restaurant.location.address,
-                    suburb: x.restaurants[i].restaurant.location.locality,
-                    postcode: x.restaurants[i].restaurant.location.zipcode,
-                    url: x.restaurants[i].restaurant.url,
-                    map: x.restaurants[i].restaurant.location.address
-                }
-            }
-        }
-        console.log(restaurant)
-    }
-});
+                //  Saving the name of the restuarant
+                name: x.restaurants[i].restaurant.name,
+                //  Saving information regarding image size
+                img: {
+                    url: x.restaurants[i].restaurant.photos_url
+                },
+                //  Saving the restaurant URL
+                url: x.restaurants[i].restaurant.url,
+                //  Saves the longitude and latitude of the restaurant
+                //  Parse the string value into a float number
+                myLatLng: {
+                    lat: parseFloat(x.restaurants[i].restaurant.location.latitude),
+                    lng: parseFloat(x.restaurants[i].restaurant.location.longitude)
+                },
+                //  Unique restaurant ID number from Zomato
+                id: x.restaurants[i].restaurant.id,
+                //  The cuisine identifier 
+                cuisines: x.restaurants[i].restaurant.cuisines
+
+            }   //  Closes the restaurant variable
+
+            //  Push the data from Zomato to Firebase
+            database.ref('restaurant' + i).set(restaurant);
+
+        }// Closes out the iterating for loop
+
+    }// Closes out the Zomato function
+
+});//closes out firebase
 
 
 // --------------------------------------------------------------------- <map>
 function initMap(lat, lng) {
     if (lat == null || lng ==null) {
-        lat = '29.7325483';
-        lng = '-95.5512395';
+        lat = 29.7560;
+        lng = -95.3573;
     }
     map = new google.maps.Map(document.getElementById('map'), {
         center: {
@@ -132,6 +141,45 @@ function initMap(lat, lng) {
         // Browser doesn't support Geolocation
         handleLocationError(false, infoWindow, map.getCenter());
     }
+    //  Loop through the restuarants pulled from firebase
+    for (var i = 0; i < 10; i++) {
+        database.ref('restaurant' + i).on('value', function (snapshot) {
+
+            //  Pulling lat and longitude of restuarant from Firebase
+            var myLatLng = new google.maps.LatLng(snapshot.val().myLatLng.lat, snapshot.val().myLatLng.lng);
+
+            //  Setting the inner text for popper
+            var contentString = snapshot.val().name;
+
+            //  Create a new info window when clicked
+            var infowindow = new google.maps.InfoWindow({
+                //  Inserts the content from content-string defined above
+                content: contentString
+            });
+
+            //  Creates a new marker on the map
+            var marker = new google.maps.Marker({
+                //  Pulls the lat and long from declared variable
+                position: myLatLng,
+                //  Defines the map as the google.maps window
+                map: map,
+                //  Gives the popper a name
+                title: snapshot.val().name
+            });
+
+            //  creates listener for the click event of icon
+            marker.addListener('click', function () {
+                infowindow.open(map, marker);
+                setTimeout(close, 3000);
+            });
+
+            function close() {
+                infowindow.close(map, marker);
+            }
+        })
+    }
+
+
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -141,5 +189,32 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(map);
 } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    
+
+
+
+
+
+
 
 
