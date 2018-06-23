@@ -19,7 +19,14 @@ var database = firebase.database(); // Create a variable to reference the databa
 let lat = "";
 let lon = "";
 let lng = "";
-let cityCode = '';
+let cityCode = {
+    American: 1,
+    Bar: 227,
+    Breakfast: 182,
+    Sandwhich: 304
+};
+
+console.log(cityCode.American)
 
 // data object to store click location info
 var data = {
@@ -39,7 +46,7 @@ database.ref('location').on('value', function (snapshot) {
 
 
     //  Create variable holding the search url including parameters
-    let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + cityCode + "&radius=10&sort=real_distance&count=10";
+    let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + cityCode.Sandwhich + "&radius=10&sort=real_distance&count=10";
 
     //  Create Ajax call
     $.ajax({
@@ -141,7 +148,70 @@ function initMap(lat, lng) {
         // Browser doesn't support Geolocation
         handleLocationError(false, infoWindow, map.getCenter());
     }
-    //  Loop through the restuarants pulled from firebase
+
+   function setMarkers() {
+       $(this).val('data-cid');
+           database.ref('location').on('value', function (snapshot) {
+            lat = snapshot.val().lat;
+            lon = snapshot.val().lng;
+            lng = lon;
+           //  Create variable holding the search url including parameters
+           let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + cityCode.Sandwhich + "&radius=10&sort=real_distance&count=10";
+       
+           //  Create Ajax call
+    $.ajax({
+               url: queryURL,
+           method: 'GET',
+        headers: {
+               'Accept': 'application/json',
+           'user-key': 'faf6b95bf12c6d16066378598f219943'
+       }
+    }).then(function (response) {
+               //  Calling the zomato JSON information manipulation
+               zomato(response);
+           })
+       
+           //  Create function to handle zomato JSON
+    function zomato(x) {
+
+        //  Iterate through the JSON retrived from zomato
+        //  Push zomato JSON to firebase
+        for (var i = 0; i < x.results_shown; i++) {
+            //  Creates a restaurant variable to hold data sent to firebase
+            var restaurant = {
+               //  Saving the name of the restuarant
+               name: x.restaurants[i].restaurant.name,
+           //  Saving information regarding image size
+                img: {
+               url: x.restaurants[i].restaurant.photos_url
+       },
+       //  Saving the restaurant URL
+       url: x.restaurants[i].restaurant.url,
+       //  Saves the longitude and latitude of the restaurant
+       //  Parse the string value into a float number
+                myLatLng: {
+               lat: parseFloat(x.restaurants[i].restaurant.location.latitude),
+           lng: parseFloat(x.restaurants[i].restaurant.location.longitude)
+       },
+       //  Unique restaurant ID number from Zomato
+       id: x.restaurants[i].restaurant.id,
+       //  The cuisine identifier 
+       cuisines: x.restaurants[i].restaurant.cuisines
+
+   }   //  Closes the restaurant variable
+
+   //  Push the data from Zomato to Firebase
+   database.ref('restaurant' + i).set(restaurant);
+
+}// Closes out the iterating for loop
+
+}// Closes out the Zomato function
+
+});
+//closes out firebase
+ 
+ 
+//  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 10; i++) {
         database.ref('restaurant' + i).on('value', function (snapshot) {
 
@@ -169,7 +239,9 @@ function initMap(lat, lng) {
 
             //  creates listener for the click event of icon
             marker.addListener('click', function () {
+                //  open the info window for selected icon
                 infowindow.open(map, marker);
+                //  closes out the popup after 5 seconds
                 setTimeout(close, 3000);
             });
 
@@ -178,10 +250,9 @@ function initMap(lat, lng) {
             }
         })
     }
-
-
 }
 
+}
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
     infoWindow.setPosition(pos);
     infoWindow.setContent(browserHasGeolocation ?
