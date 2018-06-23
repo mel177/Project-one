@@ -96,4 +96,4 @@ $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
 $(document).on("click", '#FüdMeh', drawFlags);
 $(document).on("click", '#fudmeh', drawFlags);
-$(document).on("click", '.legend', setMarkers(304,'sw'));
+$(document).on("click", '#legend', setMarkers;
