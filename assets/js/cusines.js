@@ -9,7 +9,7 @@ function resetCuisines() {
         search: "sandwich",
         code: "sw",
         cid: 304,
-        active: true
+        active: true 
     },
     
 

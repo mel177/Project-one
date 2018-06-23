@@ -124,6 +124,8 @@ function zomato(x) {
 }// Closes out the Zomato function
 
 function placeMarkers(x) {
+
+
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
 
@@ -141,6 +143,7 @@ function placeMarkers(x) {
                 content: contentString
             });
 
+
             //  Creates a new marker on the map
             var marker = new google.maps.Marker({
                 //  Pulls the lat and long from declared variable
@@ -148,11 +151,12 @@ function placeMarkers(x) {
                 //  Defines the map as the google.maps window
                 map: map,
                 //  Gives the popper a name
-                title: snapshot.val().name
+                title: snapshot.val().name, 
+                //  Gives marker id
+                id: cid
             });
 
             markers.push(marker);
-            
 
             //  creates listener for the click event of icon
             marker.addListener('click', function () {
@@ -165,32 +169,39 @@ function placeMarkers(x) {
             function close() {
                 infowindow.close(map, marker);
             }
-        })
+        }) 
     }
 }
 
 function setMarkers() {
+    //  clear the markers array
+    deleteMarkers();
+
     //  Get the cid number from the selected button
-    cid = $(this).attr('data-cid');
+    cid = parseInt($(this).attr('data-cid'));
 
-    // for(var i = 0; i < searchArr.length; i++){
-    //     if(cid == searchArr[i]){
-    //         searchArr.splice(i, 1); 
-    //     } else {
-    //     //  Pushes the selected item to search array
-    //       
-    //     }
-    // } 
+    if(!searchArr.includes(cid)){
+        searchArr.push(cid);
+        build();
+    } else {
+        duplicateArr(searchArr);    
+        let index = searchArr.indexOf(cid);
+        console.log("index: " + index)
+        searchArr.splice(index, 1);
+        build();
+    }
+}
 
-    searchArr.push(cid);
-
-    for (var i = 0; i < searchArr.length; i++) {
-
+//  Build markers
+function build(){
+for (var i = 0; i < searchArr.length; i++) {
         //  Pull the lat/lon/lng from the firebase database
         database.ref('location').on('value', function (snapshot) {
             lat = snapshot.val().lat;
             lon = snapshot.val().lng;
             lng = lon;
+            
+            
 
             //  Create variable holding the search url including parameters
             let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + searchArr[i] + "&radius=10&sort=real_distance&count=5";
@@ -209,10 +220,11 @@ function setMarkers() {
             })
 
         });//closes out firebase
-
+        
+    
         //  Call the array posting method
         placeMarkers(searchArr[i]);
-        }
+    }
 }
 
 // Sets the map on all markers in the array.
@@ -236,5 +248,12 @@ function showMarkers() {
 function deleteMarkers() {
     clearMarkers();
     markers = [];
-    searchArr = [];
 }
+
+//  Function removes duplicates from arrays
+function duplicateArr(arr) {
+    let unique_array = Array.from(new Set(arr))
+    return unique_array
+}
+
+
