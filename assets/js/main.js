@@ -100,13 +100,13 @@ function initMap(lat, lng) {
     infoWindow = new google.maps.InfoWindow;
 
     // <click listener>
-    map.addListener('click', function(e) {
+   /* map.addListener('click', function(e) {
         data.lat = e.latLng.lat();
         data.lng = e.latLng.lng();
         console.log(`you clicked at lat:${data.lat}, lng:${data.lng}` )
         // ------------------------------------------------------------------- need to do something with location of click
         initMap(data.lat, data.lng)
-    });
+    });*/
 
     // Try HTML5 geolocation. ------------------------------------------------ need to rember allow location choice
     if (navigator.geolocation) {
