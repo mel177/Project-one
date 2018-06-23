@@ -47,7 +47,9 @@
     <main role="main" class="container w-100 h-100 col-sm-12 p-0">
         <!-- Map Start -->
         <div class="w-100 h-100 col-sm-12" id="map"></div>
-        <div id="legend" data-cid=304 data-code"sw"><h1>&nbsp;</h1><h1>Click</h1><h1>This</h1></div>
+        <div  id="lg1" class="legend" data-cid=304 data-code="sw"><h1>&nbsp;</h1><h1>Click</h1><h1>This</h1></div>
+        <div id="lg2" class="legend" data-cid=1 data-code="us"><h1>&nbsp;</h1><h1>Click</h1><h1>This</h1></div>
+        <div id="lg3" ><h1>&nbsp;</h1><h1>Delete</h1><h1>This</h1></div>
         <!-- Map End -->
         <!-- Favorites Menu Start-->
         <div class="jumbotron mt-10">
@@ -61,7 +63,9 @@
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
-    <script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+    <!-- Firebase App is always required and must be first -->
+    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase-database.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
