@@ -51,11 +51,11 @@ function drawFlags() {
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        $('.favorites').append(`<h2>&nbsp;</h2>`);
+        $('.fav-picks').append(`<h2>&nbsp;</h2>`);
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
-                $('.favorites').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
+                $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
             } else {
                 active = "inactive";
             }
@@ -84,7 +84,7 @@ function saveFavorites() {
 
 // --------------------------------------------------------------------- <hideFlags>
 function hideFlags() {
-    $('.favorites').empty();
+    $('.fav-picks').empty();
     $('.flags').empty();
     $('.buttons').empty();
     $('.jumbotron').hide();
@@ -96,4 +96,4 @@ $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
 $(document).on("click", '#FüdMeh', drawFlags);
 $(document).on("click", '#fudmeh', drawFlags);
-$(document).on("click", '#legend', setMarkers;
+$(document).on("click", '#legend', setMarkers);

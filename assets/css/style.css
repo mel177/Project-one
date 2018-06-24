@@ -5,6 +5,7 @@ html, body {
   }
 
 body {
+    height: calc(100vh - 100px);
     font-family: 'Courier New', Courier, monospace;
     color: #20229e;
     size: 3em;
@@ -74,3 +75,10 @@ div#legend {
     font-weight: bold;
     text-shadow: -2px 0 white, 0 2px white, 2px 0 white, 0 -2px white;
 }
+
+footer {
+    position: fixed;
+    bottom: 0px;
+    height: 15px;
+    width: 100%;
+  }
