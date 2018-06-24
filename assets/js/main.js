@@ -28,12 +28,12 @@ var data = {
     timestamp: null,
     lat: null,
     lng: null
-  };
+};
 
 
 // --------------------------------------------------------------------- <map>
 function initMap(lat, lng) {
-    if (lat == null || lng ==null) {
+    if (lat == null || lng == null) {
         lat = 29.7560;
         lng = -95.3573;
     }
@@ -65,7 +65,7 @@ function initMap(lat, lng) {
             infoWindow.open(map);
 
             map.setCenter(pos);
-        }, function () { 
+        }, function () {
             handleLocationError(true, infoWindow, map.getCenter());
         });
     } else {
@@ -77,7 +77,7 @@ function initMap(lat, lng) {
     $(document).on("click", '.legend', setMarkers);
     $(document).on("click", '#lg3', deleteMarkers);
 
-   
+
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -86,7 +86,7 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         'Error: The Geolocation service failed.' :
         'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(map);
-} 
+}
 
 function zomato(x) {
 
@@ -114,14 +114,14 @@ function zomato(x) {
             //  The cuisine identifier 
             cuisines: x.restaurants[i].restaurant.cuisines
 
-        }   //  Closes the restaurant variable
+        } //  Closes the restaurant variable
 
         //  Push the data from Zomato to Firebase
         database.ref('restaurant' + cid + ":" + i).set(restaurant);
 
-    }// Closes out the iterating for loop
+    } // Closes out the iterating for loop
 
-}// Closes out the Zomato function
+} // Closes out the Zomato function
 
 function placeMarkers(x) {
     //  Loop through the restuarants pulled from firebase
@@ -141,6 +141,35 @@ function placeMarkers(x) {
                 content: contentString
             });
 
+
+            // calling variables for new icons
+            var iconBase = 'assets/img/icons';
+            var icons = {
+                American: {
+                    icon: iconBase + 'us.png'
+                },
+                Sandwhich: {
+                    icon: iconBase + 'sandwich.png'
+                }
+            };
+            var features = [{
+                position: new google.maps.LatLng(29.7560, -95.3573),
+                type: 'american'
+            }, {
+                position: new google.maps.LatLng(29.7560, -95.3573),
+                type: 'sandwhich'
+            }, ];
+
+            // Create markers for sandwhich icons
+            features.forEach(function (feature) {
+                var marker = new google.maps.Marker({
+                    position: feature.position,
+                    icon: icons[feature.type].icon,
+                    map: map
+                });
+            });
+
+
             //  Creates a new marker on the map
             var marker = new google.maps.Marker({
                 //  Pulls the lat and long from declared variable
@@ -148,11 +177,13 @@ function placeMarkers(x) {
                 //  Defines the map as the google.maps window
                 map: map,
                 //  Gives the popper a name
-                title: snapshot.val().name
+                title: snapshot.val().name,
+                icon: icons[feature.type].icon,
+
             });
 
             markers.push(marker);
-            
+
 
             //  creates listener for the click event of icon
             marker.addListener('click', function () {
@@ -172,15 +203,6 @@ function placeMarkers(x) {
 function setMarkers() {
     //  Get the cid number from the selected button
     cid = $(this).attr('data-cid');
-
-    // for(var i = 0; i < searchArr.length; i++){
-    //     if(cid == searchArr[i]){
-    //         searchArr.splice(i, 1); 
-    //     } else {
-    //     //  Pushes the selected item to search array
-    //       
-    //     }
-    // } 
 
     searchArr.push(cid);
 
@@ -208,11 +230,11 @@ function setMarkers() {
                 zomato(response);
             })
 
-        });//closes out firebase
+        }); //closes out firebase
 
         //  Call the array posting method
         placeMarkers(searchArr[i]);
-        }
+    }
 }
 
 // Sets the map on all markers in the array.
