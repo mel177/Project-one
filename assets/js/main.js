@@ -17,10 +17,13 @@ var database = firebase.database(); // Create a variable to reference the databa
 // --------------------------------------------------------------------- <variables>
 var favActive = false;
 var setFav = false;
+var favCount = 0;
+
 // --------------------------------------------------------------------- <init>
 resetCuisines();
 hideFlags();
 drawShortcuts();
+
 
 
 // --------------------------------------------------------------------- <save favorites>
@@ -36,8 +39,22 @@ function saveFavorites() {
     console.log("saved list" + searchArr)
 }
 
+
+function getFavCount() {
+    favCount = 0;
+    for(let i = 0; i < cuisines.length; i++){
+        if (cuisines[i].active == active) {
+            favCount++
+        }
+    }
+    console.log(`favCount = ${favCount}`)
+}
+
+
 // --------------------------------------------------------------------- <restore defaults>
 function restoreDefaults() {
+
+
     setFav = true;
     console.log("Default button was clicked")
     hideFlags();
@@ -45,6 +62,7 @@ function restoreDefaults() {
     drawFlags();
     drawShortcuts();
     setFav = false;
+    getFavCount();
 }
 
 // --------------------------------------------------------------------- <draw shortcuts>
@@ -54,66 +72,37 @@ function drawShortcuts() {
     $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);    
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="flag pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].cid}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].cid}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
         }
     }
 }
 
-
 // --------------------------------------------------------------------- <toggle active>
 function toggleActive() {
-    setFav = true;
-    let country = $(this).attr('id')
-
-    for (var i in cuisines) {
-    //  Checks to see whather or not the country is currently selected
-      if (cuisines[i].code == country) {
-          //    This runs if the the attr is listed as active
-          if ($(this).attr('data-active') == 'active') {
-            //  Change the cuisines to false to remove from list
-            cuisines[i].active = false;
-            //  save the cid to use as removal key
-            let key = cuisines[i].cid
-            $key = '.' + key
-            $($key).empty();
-            //  call the remove command using this key
-            firebase.database().ref('favs/' + key).remove();
-
-              duplicateArr(searchArr);
-              //  next get the index of the id number to splice from array 
-              let index = searchArr.indexOf(key);
-              //  splice the duplicate from the array at it's index
-              searchArr.splice(index, 1);
-
-          } else {
-            cuisines[i].active = true;
-
-            let newFav = {
-                label: cuisines[i].label,
-                code: cuisines[i].code,
-                cid: cuisines[i].cid,
-                active: true
+    getFavCount();
+    if (favCount >= 5){
+        $('.messages').empty();
+        $('.messages').append('You have reached the 5 favorite limit!');
+    } else {
+            setFav = true;
+            let country = $(this).attr('id')
+            for (var i in cuisines) {
+              if (cuisines[i].code == country) {
+                  if ($(this).attr('data-active') == 'active') {
+                    cuisines[i].active = false;
+                  } else {
+                    cuisines[i].active = true;
+                  }
+                 break; //Stop this loop, we found it!
+              }
             }
-            //  creates new child of selected favorite
-            //  adds this to firebase
-            database.ref('favs').child(cuisines[i].cid).set(newFav);
-            
-              searchArr.push(cuisines[i].cid);
-            console.log(searchArr);
-            
-          }
-         break; //Stop this loop, we found it!
-      }
-      
-      
-      
-      build();
+        $('.jumbotron').show();
+        hideFlags();
+        drawFlags();
+        drawShortcuts();
+        getFavCount();
+        setFav = false;
     }
-    $('.jumbotron').show();
-    hideFlags();
-    drawFlags();
-    drawShortcuts();
-    setFav = false;
  }
 
 // --------------------------------------------------------------------- <show/edit favorites>
@@ -122,7 +111,7 @@ function drawFlags() {
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        $('.fav-picks').append(`<h2>Favorites</h2>`);
+        // $('.fav-picks').append(`<h2>Favorites</h2>`); // not enough room for this
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
@@ -158,7 +147,7 @@ $(document).on("click", '#reset', restoreDefaults);
 $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
 $(document).on("click", '#FüdMeh', drawFlags);
-
+$(document).on("click", '.shortcut', toggleFavorite);
 
 //  Create variables for latitude and longitude
 let lat = "";
@@ -211,9 +200,14 @@ for (var i = 0; i < searchArr.length; i++) {
         
     
         //  Call the array posting method
+                zomato(response);
+            }
+        
+    
+        //  Call the array posting method
         placeMarkers(searchArr[i]);
     }
-}
+
 function placeMarkers(x) {
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
@@ -453,7 +447,7 @@ function run() {
         }
         })
 })
-   drawFlags();   
+  // drawFlags();   
    setFav = false;  
 }
 run();
