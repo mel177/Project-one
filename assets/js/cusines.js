@@ -31,19 +31,19 @@ function resetCuisines() {
             label: "Fast Food",
             code: "French Fries",
             cid: 40,
-            active: true
+            active: false
         },
         {
             label: "Chinese",
             code: "Rice Bowl",
             cid: 25,
-            active: true
+            active: false
         },
         {
             label: "Tea & Coffee",
             code: "Cafe",
             cid: 161,
-            active: true
+            active: false
         },
         {
             label: "Cuban",
@@ -67,19 +67,19 @@ function resetCuisines() {
             label: "Sushi",
             code: "Sushi",
             cid: 177,
-            active: true
+            active: false
         },
         {
             label: "Seafood",
             code: "Prawn",
             cid: 83,
-            active: true
+            active: false
         },
         {
             label: "Steak",
             code: "Steak",
             cid: 141,
-            active: true
+            active: false
         },
         {
             label: "Drinks Only",
