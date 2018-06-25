@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------- <variables>
 // Init Firebase
-var map, infoWindow;
+var map, infoWindow, pos;
 var config = {
     apiKey: "AIzaSyCjw3ZOOzTjEiAs4FX0yVvnevh06UwoeMs",
     authDomain: "fudmeh.firebaseapp.com",
@@ -13,6 +13,152 @@ var config = {
 firebase.initializeApp(config);
 
 var database = firebase.database(); // Create a variable to reference the database
+
+// --------------------------------------------------------------------- <variables>
+var favActive = false;
+var setFav = false;
+// --------------------------------------------------------------------- <init>
+resetCuisines();
+hideFlags();
+drawShortcuts();
+
+
+// --------------------------------------------------------------------- <save favorites>
+function toggleFavorite() {
+    hideFlags();
+    let id = $(this).attr('id')
+    console.log(id) // Melinh, please create function to toggle favorites on the map when one of a favorite icons is clicked. thanks, Tom
+}
+
+// --------------------------------------------------------------------- <save favorites>
+function saveFavorites() {
+    hideFlags(); 
+    console.log("saved list" + searchArr)
+}
+
+// --------------------------------------------------------------------- <restore defaults>
+function restoreDefaults() {
+    setFav = true;
+    console.log("Default button was clicked")
+    hideFlags();
+    resetCuisines();
+    drawFlags();
+    drawShortcuts();
+    setFav = false;
+}
+
+// --------------------------------------------------------------------- <draw shortcuts>
+function drawShortcuts() {
+    // Draw shortcut icons
+    $('.navbar').empty();
+    $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);    
+    for (let i = 0; i < cuisines.length; i++) {
+        if (cuisines[i].active === true) {
+            $('.navbar').append(`<div class="flag pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].cid}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+        }
+    }
+}
+
+
+// --------------------------------------------------------------------- <toggle active>
+function toggleActive() {
+    setFav = true;
+    let country = $(this).attr('id')
+
+    for (var i in cuisines) {
+    //  Checks to see whather or not the country is currently selected
+      if (cuisines[i].code == country) {
+          //    This runs if the the attr is listed as active
+          if ($(this).attr('data-active') == 'active') {
+            //  Change the cuisines to false to remove from list
+            cuisines[i].active = false;
+            //  save the cid to use as removal key
+            let key = cuisines[i].cid
+            $key = '.' + key
+            $($key).empty();
+            //  call the remove command using this key
+            firebase.database().ref('favs/' + key).remove();
+
+              duplicateArr(searchArr);
+              //  next get the index of the id number to splice from array 
+              let index = searchArr.indexOf(key);
+              //  splice the duplicate from the array at it's index
+              searchArr.splice(index, 1);
+
+          } else {
+            cuisines[i].active = true;
+
+            let newFav = {
+                label: cuisines[i].label,
+                code: cuisines[i].code,
+                cid: cuisines[i].cid,
+                active: true
+            }
+            //  creates new child of selected favorite
+            //  adds this to firebase
+            database.ref('favs').child(cuisines[i].cid).set(newFav);
+            
+              searchArr.push(cuisines[i].cid);
+            console.log(searchArr);
+            
+          }
+         break; //Stop this loop, we found it!
+      }
+      
+      
+      
+      build();
+    }
+    $('.jumbotron').show();
+    hideFlags();
+    drawFlags();
+    drawShortcuts();
+    setFav = false;
+ }
+
+// --------------------------------------------------------------------- <show/edit favorites>
+function drawFlags() {
+    // $('#map').hide();
+    if (favActive == false || setFav == true) {
+        favActive = true;
+        $('.jumbotron').show();
+        $('.fav-picks').append(`<h2>Favorites</h2>`);
+        for (let i = 0; i < cuisines.length; i++) {
+            if (cuisines[i].active === true) {
+                active = "active";
+                    $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
+            } else {
+                active = "inactive";
+            }
+                    $('.flags').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+        }
+        $('.buttons').html(`
+        <div class="btn-group"><button type="button" class="btn btn-success text-white" id="save">Save</div>
+        <div class="btn-group"><button type="button" class="btn btn-warning text-dark" id="reset">Default</div>
+        `);
+    } else {
+        hideFlags();
+        favActive = false;
+        // $('#map').show();
+    }
+}
+
+// --------------------------------------------------------------------- <hideFlags>
+function hideFlags() {
+    $('.fav-picks').empty();
+    $('.flags').empty();
+    $('.buttons').empty();
+    $('.jumbotron').hide();
+    $('.navbar').empty();
+    drawShortcuts();
+}
+
+// --------------------------------------------------------------------- <click listeners>
+$(document).on("click", '#reset', restoreDefaults);
+$(document).on("click", '#save', saveFavorites);
+$(document).on("click", '.flag', toggleActive);
+$(document).on("click", '#FüdMeh', drawFlags);
+
 
 //  Create variables for latitude and longitude
 let lat = "";
@@ -28,65 +174,102 @@ var data = {
     timestamp: null,
     lat: null,
     lng: null
-  };
+};
 
 
-// --------------------------------------------------------------------- <map>
-function initMap(lat, lng) {
-    if (lat == null || lng ==null) {
-        lat = 29.7560;
-        lng = -95.3573;
-    }
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: {
-            lat: lat, // default location Norris Conference Center
-            lng: lng
-        },
-        zoom: 15
-    });
-    infoWindow = new google.maps.InfoWindow;
+//  --------------------------------------------------------------------- 
 
+function setMarkers() {
+    //  clear the markers array
+    deleteMarkers();
 
-    // Try HTML5 geolocation. ------------------------------------------------ need to rember allow location choice
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
+    //  Get the cid number from the selected button
+    cid = parseInt($(this).attr('data-cid'));
 
-            database.ref('location').set({
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
+    //  Check to see if these search params have already
+    //  been set. disable if they have been
+    //  Checking to see if array includes  id nuymber
+    
+}
+function build(){
+for (var i = 0; i < searchArr.length; i++) {
+            //  Create variable holding the search url including parameters
+            let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + searchArr[i] + "&radius=10&sort=real_distance&count=5";
+
+            //  Create Ajax call
+            $.ajax({
+                url: queryURL,
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'user-key': 'faf6b95bf12c6d16066378598f219943'
+                }
+            }).then(function (response) {
+                //  Calling the zomato JSON information manipulation
+                zomato(response);
             })
-
-            infoWindow.setPosition(pos);
-            infoWindow.setContent('Your Location');
-            infoWindow.open(map);
-
-            map.setCenter(pos);
-        }, function () { 
-            handleLocationError(true, infoWindow, map.getCenter());
-        });
-    } else {
-        // Browser doesn't support Geolocation
-        handleLocationError(false, infoWindow, map.getCenter());
+        
+    
+        //  Call the array posting method
+        placeMarkers(searchArr[i]);
     }
+}
+function placeMarkers(x) {
+    //  Loop through the restuarants pulled from firebase
+    for (var i = 0; i < 5; i++) {
 
-    //  Click event to place markers on map
-    $(".legend").off("click").on("click", setMarkers);
-    $("#lg3").on("click", deleteAllMarkers);
+        database.ref('restaurant' + x + ":" + i).on('value', function (snapshot) {
 
-   
+            //  Pulling lat and longitude of restuarant from Firebase
+            var myLatLng = new google.maps.LatLng(lat, lng);
+
+            //  Setting the inner text for popper
+            var contentString = snapshot.val().name;
+
+            //  Create a new info window when clicked
+            var infowindow = new google.maps.InfoWindow({
+                //  Inserts the content from content-string defined above
+                content: contentString
+            });
+
+
+            //  Creates a new marker on the map
+            var marker = new google.maps.Marker({
+                //  Pulls the lat and long from declared variable
+                position: myLatLng,
+                //  Defines the map as the google.maps window
+                map: map,
+                //  Gives the popper a name
+                title: snapshot.val().name, 
+                //  Gives marker id
+                id: cid,
+                //  userkey
+                key: ""
+            });
+
+            // Push info to markers array for population
+            markers.push(marker);
+
+            //  creates listener for the click event of icon
+            marker.addListener('click', function () {
+                //  open the info window for selected icon
+                infowindow.open(map, marker);
+                //  closes out the popup after 5 seconds
+                setTimeout(close, 3000);
+
+
+            //  close the popups after an interval
+            function close() {
+                infowindow.close(map, marker);
+            }
+            });
+
+            
+        }) 
+    }
 }
 
-function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    infoWindow.setPosition(pos);
-    infoWindow.setContent(browserHasGeolocation ?
-        'Error: The Geolocation service failed.' :
-        'Error: Your browser doesn\'t support geolocation.');
-    infoWindow.open(map);
-} 
+//  ---------------------------------------------------------------------
 
 function zomato(x) {
 
@@ -121,125 +304,57 @@ function zomato(x) {
 
     }// Closes out the iterating for loop
 
-}// Closes out the Zomato function
-
-function placeMarkers(x) {
-
-
-    //  Loop through the restuarants pulled from firebase
-    for (var i = 0; i < 5; i++) {
-
-        database.ref('restaurant' + x + ":" + i).on('value', function (snapshot) {
-
-            //  Pulling lat and longitude of restuarant from Firebase
-            var myLatLng = new google.maps.LatLng(snapshot.val().myLatLng.lat, snapshot.val().myLatLng.lng);
-
-            //  Setting the inner text for popper
-            var contentString = snapshot.val().name;
-
-            //  Create a new info window when clicked
-            var infowindow = new google.maps.InfoWindow({
-                //  Inserts the content from content-string defined above
-                content: contentString
-            });
-
-
-            //  Creates a new marker on the map
-            var marker = new google.maps.Marker({
-                //  Pulls the lat and long from declared variable
-                position: myLatLng,
-                //  Defines the map as the google.maps window
-                map: map,
-                //  Gives the popper a name
-                title: snapshot.val().name, 
-                //  Gives marker id
-                id: cid
-            });
-
-            // Push info to markers array for population
-            markers.push(marker);
-
-            //  creates listener for the click event of icon
-            marker.addListener('click', function () {
-                //  open the info window for selected icon
-                infowindow.open(map, marker);
-                //  closes out the popup after 5 seconds
-                setTimeout(close, 3000);
-
-
-            //  close the popups after an interval
-            function close() {
-                infowindow.close(map, marker);
-            }
-            });
-
-            
-        }) 
-    }
-    console.log(markers);
 }
 
-function setMarkers() {
-    //  clear the markers array
-    deleteMarkers();
+//  ---------------------------------------------------------------------
 
-    //  Get the cid number from the selected button
-    cid = parseInt($(this).attr('data-cid'));
-
-    //  Check to see if these search params have already
-    //  been set. disable if they have been
-    //  Checking to see if array includes  id nuymber
-    if(!searchArr.includes(cid)){
-        //  if it doesn't, push data to search array
-        searchArr.push(cid);
-        //  then build the markers
-        build();
-        //  If there is a duplicate, we must remove, then splice out
-    } else {
-        //  first search for duplicates to catch all possible renditions
-        duplicateArr(searchArr);   
-        //  next get the index of the id number to splice from array 
-        let index = searchArr.indexOf(cid);
-        //  splice the duplicate from the array at it's index
-        searchArr.splice(index, 1);
-        //  then rebuild markers without the duplicate
-        build();
+//  Initializes the map
+function initMap(lat, lng) {
+    if (lat == null || lng ==null) {
+        lat = 29.7560;
+        lng = -95.3573;
     }
-}
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {
+            lat: lat, // default location Norris Conference Center
+            lng: lng
+        },
+        zoom: 15
+    });
+    infoWindow = new google.maps.InfoWindow;
 
-//  Build markers
-function build(){
-for (var i = 0; i < searchArr.length; i++) {
-        //  Pull the lat/lon/lng from the firebase database
-        database.ref('location').on('value', function (snapshot) {
-            lat = snapshot.val().lat;
-            lon = snapshot.val().lng;
-            lng = lon;
-            
-            
 
-            //  Create variable holding the search url including parameters
-            let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + searchArr[i] + "&radius=10&sort=real_distance&count=5";
+    // Try HTML5 geolocation. ------------------------------------------------ need to rember allow location choice
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
 
-            //  Create Ajax call
-            $.ajax({
-                url: queryURL,
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'user-key': 'faf6b95bf12c6d16066378598f219943'
-                }
-            }).then(function (response) {
-                //  Calling the zomato JSON information manipulation
-                zomato(response);
+            database.ref('location').set({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
             })
 
-        });//closes out firebase
-        
-    
-        //  Call the array posting method
-        placeMarkers(searchArr[i]);
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Your Location');
+            infoWindow.open(map);
+
+            map.setCenter(pos);
+        }, function () { 
+            handleLocationError(true, infoWindow, map.getCenter());
+        });
+    } else {
+        // Browser doesn't support Geolocation
+        handleLocationError(false, infoWindow, map.getCenter());
     }
+
+    //  Click event to place markers on map
+    $(".legend").off("click").on("click", setMarkers);
+    $("#lg3").on("click", deleteAllMarkers);
+
+   
 }
 
 // Sets the map on all markers in the array.
@@ -272,12 +387,73 @@ function deleteAllMarkers() {
     searchArr = [];
 }
 
+//  ---------------------------------------------------------------------
+
 //  Function removes duplicates from arrays
 function duplicateArr(arr) {
     let unique_array = Array.from(new Set(arr))
     return unique_array
 }
 
+//  Handles errors
+function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+    infoWindow.setPosition(pos);
+    infoWindow.setContent(browserHasGeolocation ?
+        'Error: The Geolocation service failed.' :
+        'Error: Your browser doesn\'t support geolocation.');
+    infoWindow.open(map);
+} 
 
 
+    // database.ref('favs').on('child_added', function (snapshot) {
 
+    //     cid = snapshot.val().cid;
+    //     // console.log(cid)
+
+    //     if (!searchArr.includes(cid)) {
+    //         //  if it doesn't, push data to search array
+    //         searchArr.push(cid);
+
+    //         //  then build the markers
+    //         console.log("propogate" + searchArr);
+    //         // build();
+    //         //  If there is a duplicate, we must remove, then splice out
+    //     } else {
+    //         //  first search for duplicates to catch all possible renditions
+    //         duplicateArr(searchArr);
+    //         //  next get the index of the id number to splice from array 
+    //         let index = searchArr.indexOf(cid);
+    //         //  splice the duplicate from the array at it's index
+    //         searchArr.splice(index, 1);
+    //         //  then rebuild markers without the duplicate
+    //         console.log("remove duplicate" + searchArr);
+    //         // build();
+    //     }
+
+    //     // 
+
+    // })
+    
+function run() {
+    setFav = true;
+    database.ref('favs').on('value', function (snapshot) {
+    
+    snapshot.forEach(function (childSnapshot) {
+        // for(var i = 0; i < cuisines.length; i++) {
+            
+        // if (childSnapshot.val().cid == cuisines[i].cid && cuisines[i].active == false) {
+        //     cuisines[i].active == true;
+        // }
+        // else if (childSnapshot.val().cid == cuisines[i].cid && cuisines[i].active == true){
+        //     cuisines[i].active == false;
+        //     }
+        if ((childSnapshot.val().cid) == cuisines[0].cid){
+            cuisines[0].active = true;
+            cuisines[0].active = true;
+        }
+        })
+})
+   drawFlags();   
+   setFav = false;  
+}
+run();

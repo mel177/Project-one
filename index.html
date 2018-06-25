@@ -36,29 +36,28 @@
     <link href="assets/css/style.css" rel="stylesheet">
   </head>
 
-  <body>
-    <!-- Nav Bar Start-->
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-      <a class="navbar-brand" href="#" id="FüdMeh">FüdMeh!</a>
-    </nav>
-  <!-- Nav Bar End-->
-  
-    
+  <body>  
     <main role="main" class="container w-100 h-100 col-sm-12 p-0">
         <!-- Map Start -->
         <div class="w-100 h-100 col-sm-12" id="map"></div>
-        <div  id="lg1" class="legend" data-cid=304 data-code="sw"><h1>&nbsp;</h1><h1>Click</h1><h1>This</h1></div>
-        <div id="lg2" class="legend" data-cid=1 data-code="us"><h1>&nbsp;</h1><h1>Click</h1><h1>This</h1></div>
-        <div id="lg3" ><h1>&nbsp;</h1><h1>Delete</h1><h1>This</h1></div>
         <!-- Map End -->
         <!-- Favorites Menu Start-->
         <div class="jumbotron mt-10">
-            <div class="favorites col-sm-12"></div>
+            <div class="fav-picks col-sm-12"></div>
             <div class="buttons col-sm-12 pt-3"></div>
             <div class="flags col-sm-12"></div>
         </div>
         <!-- Favorites Menu End -->
+        
     </main>
+
+    <footer>
+      <div class="foot fixed-bottom h-200 w-100 col-sm-12 text-left text-nowrap">
+        <div id="messages" class="2" id="messages"><p>Something</p></div>
+        <nav class="navbar navbar-expand-md navbar-dark pr-0 pl-0 text-nowrap"></nav>
+      </div>
+    </footer>
+
 
 
     <!-- Bootstrap core JavaScript
@@ -67,14 +66,12 @@
     <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase-database.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/popper.js"></script>
+    <script src="https://unpkg.com/tooltip.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-    
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCibwKW2p8ZMMIaOBCHDPJcgNhlYyt1SU0&callback=initMap" async defer></script>
     <!-- Our Stuff -->
     <script src="assets/js/cusines.js"></script>
-    <script src="assets/js/favorites.js"></script>
     <script src="assets/js/main.js"></script>
-    <!-- Init Map make it background image -->
   </body>
 </html>
