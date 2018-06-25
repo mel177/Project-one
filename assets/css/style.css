@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Bangers');
+@import url('https://fonts.googleapis.com/css?family=Bubblegum+Sans');
 html, body {
     height: 100%;
     margin: 0;
@@ -5,10 +7,12 @@ html, body {
   }
 
 body {
-    height: calc(100vh - 100px);
-    font-family: 'Courier New', Courier, monospace;
+    height: calc(100vh - 65px);
+    font-family: 'Bubblegum Sans', cursive;
     color: #20229e;
-    size: 3em;
+    /*-webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black; */
+    font-size: 18pt;
     background-color: #333333;
 }
 
@@ -46,6 +50,12 @@ div#legend {
     text-align: right;
 }
 
+.instructions {
+    position: fixed;
+    bottom: 0px;
+    height: 1px;
+    width: 100%;    
+}
 
 .inactive {
     filter: gray; /* IE6-9 */
@@ -54,14 +64,12 @@ div#legend {
   }
 
 .icon {
-    width: 30px;
-    height: 20px;
-    box-shadow: 2px 1px 1px gray;
+    width: 50px;
+    height: 40px;
+    /* box-shadow: 2px 1px 1px gray; */
 }
 
 .icon:hover {
-    width: 30px;
-    height: 20px;
     box-shadow: 1px 1px 1px gray;
 }
   
@@ -76,9 +84,10 @@ div#legend {
     text-shadow: -2px 0 white, 0 2px white, 2px 0 white, 0 -2px white;
 }
 
+
 footer {
     position: fixed;
     bottom: 0px;
-    height: 15px;
+    height: 60px;
     width: 100%;
   }

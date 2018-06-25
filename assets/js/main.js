@@ -13,6 +13,121 @@ var config = {
 firebase.initializeApp(config);
 var database = firebase.database(); // Create a variable to reference the database
 
+// --------------------------------------------------------------------- <variables>
+var favActive = false;
+var setFav = false;
+// --------------------------------------------------------------------- <init>
+resetCuisines();
+hideFlags();
+drawShortcuts();
+
+
+// --------------------------------------------------------------------- <save favorites>
+function toggleFavorite() {
+    hideFlags();
+    let id = $(this).attr('id')
+    console.log(id) // Melinh, please create function to toggle favorites on the map when one of a favorite icons is clicked. thanks, Tom
+}
+
+// --------------------------------------------------------------------- <save favorites>
+function saveFavorites() {
+    hideFlags();
+    let id = $(this).attr('id')
+    console.log(id) // Benjamin, please create function to save favorite shortcuts to firebase, thanks, Tom    
+    console.log("Saving favorites to database")
+    // Save user favorites to database
+}
+
+
+// --------------------------------------------------------------------- <restore defaults>
+function restoreDefaults() {
+    setFav = true;
+    console.log("Default button was clicked")
+    hideFlags();
+    resetCuisines();
+    drawFlags();
+    drawShortcuts();
+    setFav = false;
+}
+
+// --------------------------------------------------------------------- <draw shortcuts>
+function drawShortcuts() {
+    // Draw shortcut icons
+    $('.navbar').empty();
+    $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);    
+    for (let i = 0; i < cuisines.length; i++) {
+        if (cuisines[i].active === true) {
+            $('.navbar').append(`<div class="flag pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+        }
+    }
+}
+
+
+// --------------------------------------------------------------------- <toggle active>
+function toggleActive() {
+    setFav = true;
+    let country = $(this).attr('id')
+    for (var i in cuisines) {
+      if (cuisines[i].code == country) {
+          if ($(this).attr('data-active') == 'active') {
+            cuisines[i].active = false;
+          } else {
+            cuisines[i].active = true;
+          }
+         break; //Stop this loop, we found it!
+      }
+    }
+    $('.jumbotron').show();
+    hideFlags();
+    drawFlags();
+    drawShortcuts();
+    setFav = false;
+ }
+
+// --------------------------------------------------------------------- <show/edit favorites>
+function drawFlags() {
+    // $('#map').hide();
+    if (favActive == false || setFav == true) {
+        favActive = true;
+        $('.jumbotron').show();
+        $('.fav-picks').append(`<h2>Favorites</h2>`);
+        for (let i = 0; i < cuisines.length; i++) {
+            if (cuisines[i].active === true) {
+                active = "active";
+                    $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
+            } else {
+                active = "inactive";
+            }
+                    $('.flags').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+        }
+        $('.buttons').html(`
+        <div class="btn-group"><button type="button" class="btn btn-success text-white" id="save">Save</div>
+        <div class="btn-group"><button type="button" class="btn btn-warning text-dark" id="reset">Default</div>
+        `);
+    } else {
+        hideFlags();
+        favActive = false;
+        // $('#map').show();
+    }
+}
+
+// --------------------------------------------------------------------- <hideFlags>
+function hideFlags() {
+    $('.fav-picks').empty();
+    $('.flags').empty();
+    $('.buttons').empty();
+    $('.jumbotron').hide();
+    $('.navbar').empty();
+    drawShortcuts();
+}
+
+// --------------------------------------------------------------------- <click listeners>
+$(document).on("click", '#reset', restoreDefaults);
+$(document).on("click", '#save', saveFavorites);
+$(document).on("click", '.flag', toggleActive);
+$(document).on("click", '#FüdMeh', drawFlags);
+
+
 //  Create variables for latitude and longitude
 let lat = "";
 let lon = "";
@@ -23,7 +138,7 @@ var data = {
     timestamp: null,
     lat: null,
     lng: null
-  };
+};
 
 
 // --------------------------------------------------------------------- <firebase>
