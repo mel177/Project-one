@@ -35,11 +35,19 @@ function toggleFavorite() {
 
 // --------------------------------------------------------------------- <save favorites>
 function saveFavorites() {
-    hideFlags();
-    let id = $(this).attr('id')
-    console.log(id) // Benjamin, please create function to save favorite shortcuts to firebase, thanks, Tom    
-    console.log("Saving favorites to database")
-    // Save user favorites to database
+    hideFlags(); 
+    console.log("saved list" + searchArr)
+}
+
+
+function getFavCount() {
+    favCount = 0;
+    for(let i = 0; i < cuisines.length; i++){
+        if (cuisines[i].active == true) {
+            favCount++
+        }
+    }
+    console.log(`favCount = ${favCount}`)
 }
 
 
@@ -55,6 +63,7 @@ function restoreDefaults() {
     drawShortcuts();
     setFav = false;
     getFavCount();
+   
 }
 
 
@@ -84,38 +93,44 @@ function drawShortcuts() {
 // --------------------------------------------------------------------- <toggle active>
 function toggleActive() {
     getFavCount();
-    if (favCount >= 5){
-        $('.messages').empty();
-        $('.messages').append('You have reached the 5 favorite limit!');
-    } else {
             setFav = true;
             let country = $(this).attr('id')
             for (var i in cuisines) {
               if (cuisines[i].code == country) {
                   if ($(this).attr('data-active') == 'active') {
                     cuisines[i].active = false;
+                    $('#messages').empty();
                   } else {
-                    cuisines[i].active = true;
+                    if (favCount >= 5){
+                        $('#messages').empty();
+                        $('#messages').append('<p>You have reached the 5 favorite limit!</p>');
+                    } else {
+                        cuisines[i].active = true;
+                        $('#messages').empty();
+                    }
                   }
                  break; //Stop this loop, we found it!
+                 $('#messages').empty();
               }
             }
         $('.jumbotron').show();
+        $('.foot').hide();
         hideFlags();
         drawFlags();
         drawShortcuts();
         getFavCount();
         setFav = false;
-    }
+        
  }
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
-    // $('#map').hide();
+    
+    console.log('draw flag')
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        // $('.fav-picks').append(`<h2>Favorites</h2>`); // not enough room for this
+        $('.foot').hide();
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
@@ -142,6 +157,7 @@ function hideFlags() {
     $('.flags').empty();
     $('.buttons').empty();
     $('.jumbotron').hide();
+    $('.foot').show();
     $('.navbar').empty();
     drawShortcuts();
 }
