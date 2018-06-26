@@ -17,10 +17,13 @@ var database = firebase.database(); // Create a variable to reference the databa
 // --------------------------------------------------------------------- <variables>
 var favActive = false;
 var setFav = false;
+var favCount = 0;
+
 // --------------------------------------------------------------------- <init>
 resetCuisines();
 hideFlags();
 drawShortcuts();
+
 
 
 // --------------------------------------------------------------------- <save favorites>
@@ -42,6 +45,8 @@ function saveFavorites() {
 
 // --------------------------------------------------------------------- <restore defaults>
 function restoreDefaults() {
+
+
     setFav = true;
     console.log("Default button was clicked")
     hideFlags();
@@ -49,6 +54,7 @@ function restoreDefaults() {
     drawFlags();
     drawShortcuts();
     setFav = false;
+    getFavCount();
 }
 
 // --------------------------------------------------------------------- <draw shortcuts>
@@ -58,32 +64,38 @@ function drawShortcuts() {
     $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="flag pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].cid}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
         }
     }
 }
-
 
 // --------------------------------------------------------------------- <toggle active>
 function toggleActive() {
-    setFav = true;
-    let country = $(this).attr('id')
-    for (var i in cuisines) {
-        if (cuisines[i].code == country) {
-            if ($(this).attr('data-active') == 'active') {
-                cuisines[i].active = false;
-            } else {
-                cuisines[i].active = true;
+    getFavCount();
+    if (favCount >= 5){
+        $('.messages').empty();
+        $('.messages').append('You have reached the 5 favorite limit!');
+    } else {
+            setFav = true;
+            let country = $(this).attr('id')
+            for (var i in cuisines) {
+              if (cuisines[i].code == country) {
+                  if ($(this).attr('data-active') == 'active') {
+                    cuisines[i].active = false;
+                  } else {
+                    cuisines[i].active = true;
+                  }
+                 break; //Stop this loop, we found it!
+              }
             }
-            break; //Stop this loop, we found it!
-        }
+        $('.jumbotron').show();
+        hideFlags();
+        drawFlags();
+        drawShortcuts();
+        getFavCount();
+        setFav = false;
     }
-    $('.jumbotron').show();
-    hideFlags();
-    drawFlags();
-    drawShortcuts();
-    setFav = false;
-}
+ }
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
@@ -91,7 +103,7 @@ function drawFlags() {
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        $('.fav-picks').append(`<h2>Favorites</h2>`);
+        // $('.fav-picks').append(`<h2>Favorites</h2>`); // not enough room for this
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
@@ -127,7 +139,7 @@ $(document).on("click", '#reset', restoreDefaults);
 $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
 $(document).on("click", '#FüdMeh', drawFlags);
-
+$(document).on("click", '.shortcut', toggleFavorite);
 
 //  Create variables for latitude and longitude
 let lat = "";
@@ -205,9 +217,14 @@ function build() {
 
 
         //  Call the array posting method
+                zomato(response);
+            }
+        
+    
+        //  Call the array posting method
         placeMarkers(searchArr[i]);
     }
-}
+
 function placeMarkers(x) {
 
 
