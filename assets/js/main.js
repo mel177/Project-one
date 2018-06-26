@@ -57,6 +57,18 @@ function restoreDefaults() {
     getFavCount();
 }
 
+
+// --------------------------------------------------------------------- <get Fav Count>
+function getFavCount() {
+    favCount = 0;
+    for (let i = 0; i < cuisines.length; i++) {
+        if (cuisines[i].active == active) {
+            favCount++
+        }
+    }
+    // console.log(`favCount = ${favCount}`)
+}
+
 // --------------------------------------------------------------------- <draw shortcuts>
 function drawShortcuts() {
     // Draw shortcut icons
@@ -64,7 +76,7 @@ function drawShortcuts() {
     $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].cid}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}" data-fav-id="${cuisines[i].cid}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].cid}"></div>`)
         }
     }
 }
@@ -135,6 +147,10 @@ function hideFlags() {
 }
 
 // --------------------------------------------------------------------- <click listeners>
+//  Click event to place markers on map
+$(document).off("click").on("click", ".shortcut .icon", setMarkers);
+$("#lg3").on("click", deleteAllMarkers);
+
 $(document).on("click", '#reset', restoreDefaults);
 $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
@@ -165,7 +181,7 @@ function setMarkers() {
     deleteMarkers();
 
     //  Get the cid number from the selected button
-    cid = parseInt($(this).attr('data-cid'));
+    cid = parseInt($(this).attr('data-fav-id'));
 
     //  Check to see if these search params have already
     //  been set. disable if they have been
@@ -187,6 +203,8 @@ function setMarkers() {
         build();
     }
 }
+
+//  Build markers
 function build() {
     for (var i = 0; i < searchArr.length; i++) {
         //  Pull the lat/lon/lng from the firebase database
@@ -206,7 +224,7 @@ function build() {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'user-key': 'faf6b95bf12c6d16066378598f219943'
+                    'user-key': '0ea13516979fc38c42e691a08aedc03e'
                 }
             }).then(function (response) {
                 //  Calling the zomato JSON information manipulation
@@ -217,13 +235,9 @@ function build() {
 
 
         //  Call the array posting method
-                zomato(response);
-            }
-        
-    
-        //  Call the array posting method
         placeMarkers(searchArr[i]);
     }
+}
 
 function placeMarkers(x) {
 
@@ -233,8 +247,12 @@ function placeMarkers(x) {
 
         database.ref('restaurant' + x + ":" + i).on('value', function (snapshot) {
 
-            //  Pulling lat and longitude of restuarant from Firebase
+
             var myLatLng = new google.maps.LatLng(snapshot.val().myLatLng.lat, snapshot.val().myLatLng.lng);
+
+            if(myLatLng == null){
+                break;
+            } else {
 
             //  Setting the inner text for popper
             var contentString = snapshot.val().name;
@@ -276,9 +294,8 @@ function placeMarkers(x) {
             });
 
 
-        })
+        }})
     }
-    console.log(markers);
 }
 
 //  ---------------------------------------------------------------------
@@ -349,6 +366,8 @@ function initMap(lat, lng) {
                 lng: position.coords.longitude
             })
 
+            lat = pos.lat;
+
             infoWindow.setPosition(pos);
             infoWindow.setContent('Your Location');
             infoWindow.open(map);
@@ -362,9 +381,7 @@ function initMap(lat, lng) {
         handleLocationError(false, infoWindow, map.getCenter());
     }
 
-    //  Click event to place markers on map
-    $(".shortcut").off("click").on("click", setMarkers);
-    $("#lg3").on("click", deleteAllMarkers);
+   
 
 
 }
