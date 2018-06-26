@@ -43,7 +43,7 @@ function saveFavorites() {
 function getFavCount() {
     favCount = 0;
     for(let i = 0; i < cuisines.length; i++){
-        if (cuisines[i].active == active) {
+        if (cuisines[i].active == true) {
             favCount++
         }
     }
@@ -63,6 +63,7 @@ function restoreDefaults() {
     drawShortcuts();
     setFav = false;
     getFavCount();
+   
 }
 
 // --------------------------------------------------------------------- <draw shortcuts>
@@ -80,41 +81,48 @@ function drawShortcuts() {
 // --------------------------------------------------------------------- <toggle active>
 function toggleActive() {
     getFavCount();
-    if (favCount >= 5){
-        $('.messages').empty();
-        $('.messages').append('You have reached the 5 favorite limit!');
-    } else {
             setFav = true;
             let country = $(this).attr('id')
             for (var i in cuisines) {
               if (cuisines[i].code == country) {
                   if ($(this).attr('data-active') == 'active') {
                     cuisines[i].active = false;
+                    $('#messages').empty();
                   } else {
-                    cuisines[i].active = true;
+                    if (favCount >= 5){
+                        $('#messages').empty();
+                        $('#messages').append('<p>You have reached the 5 favorite limit!</p>');
+                    } else {
+                        cuisines[i].active = true;
+                        $('#messages').empty();
+                    }
                   }
                  break; //Stop this loop, we found it!
+                 $('#messages').empty();
               }
             }
         $('.jumbotron').show();
+        $('.foot').hide();
         hideFlags();
         drawFlags();
         drawShortcuts();
         getFavCount();
         setFav = false;
-    }
+        
  }
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
-    // $('#map').hide();
+    
+    console.log('draw flag')
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        // $('.fav-picks').append(`<h2>Favorites</h2>`); // not enough room for this
+        $('.foot').hide();
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
+                console.log('active')
                     $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
             } else {
                 active = "inactive";
@@ -138,6 +146,7 @@ function hideFlags() {
     $('.flags').empty();
     $('.buttons').empty();
     $('.jumbotron').hide();
+    $('.foot').show();
     $('.navbar').empty();
     drawShortcuts();
 }

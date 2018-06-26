@@ -17,7 +17,7 @@ body {
 }
 
 .jumbotron {
-    position:absolute;
+    /* position:absolute; */
     left:0px;
     top: 0px;
     z-index:3;
@@ -62,6 +62,7 @@ div#lg3 {
     flex-direction: column-row;
     justify-content: left;
     text-align: right;
+    align-self: flex-end;
 }
 
 .instructions {
