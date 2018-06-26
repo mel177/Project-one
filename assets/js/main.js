@@ -224,7 +224,7 @@ function placeMarkers(x) {
         database.ref('restaurant' + x + ":" + i).on('value', function (snapshot) {
 
             //  Pulling lat and longitude of restuarant from Firebase
-            var myLatLng = new google.maps.LatLng(lat, lng);
+            var myLatLng = snapshot.val().myLatLng;
 
             //  Setting the inner text for popper
             var contentString = snapshot.val().name;
@@ -252,6 +252,8 @@ function placeMarkers(x) {
                 currency: "$",
                 // url to the restaurant for more info
                 url: "https://www.zomato.com/houston/name",
+                // latitude and longitude for each restaurant
+
 
 
             });
