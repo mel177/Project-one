@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------- <variables>
 // Init Firebase
-var map, infoWindow, pos;
+var map, infoWindow;
 var config = {
     apiKey: "AIzaSyCjw3ZOOzTjEiAs4FX0yVvnevh06UwoeMs",
     authDomain: "fudmeh.firebaseapp.com",
@@ -66,14 +66,26 @@ function restoreDefaults() {
    
 }
 
+
+// --------------------------------------------------------------------- <get Fav Count>
+function getFavCount() {
+    favCount = 0;
+    for (let i = 0; i < cuisines.length; i++) {
+        if (cuisines[i].active == active) {
+            favCount++
+        }
+    }
+    // console.log(`favCount = ${favCount}`)
+}
+
 // --------------------------------------------------------------------- <draw shortcuts>
 function drawShortcuts() {
     // Draw shortcut icons
     $('.navbar').empty();
-    $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);    
+    $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].cid}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}" data-fav-id="${cuisines[i].cid}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].cid}"></div>`)
         }
     }
 }
@@ -122,12 +134,11 @@ function drawFlags() {
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
-                console.log('active')
-                    $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
+                $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
             } else {
                 active = "inactive";
             }
-                    $('.flags').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
+            $('.flags').append(`<div class="flag legend ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
         }
         $('.buttons').html(`
         <div class="btn-group"><button type="button" class="btn btn-success text-white" id="save">Save</div>
@@ -152,6 +163,10 @@ function hideFlags() {
 }
 
 // --------------------------------------------------------------------- <click listeners>
+//  Click event to place markers on map
+$(document).off("click").on("click", ".shortcut .icon", setMarkers);
+$("#lg3").on("click", deleteAllMarkers);
+
 $(document).on("click", '#reset', restoreDefaults);
 $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
@@ -182,15 +197,42 @@ function setMarkers() {
     deleteMarkers();
 
     //  Get the cid number from the selected button
-    cid = parseInt($(this).attr('data-cid'));
+    cid = parseInt($(this).attr('data-fav-id'));
 
     //  Check to see if these search params have already
     //  been set. disable if they have been
     //  Checking to see if array includes  id nuymber
-    
+    if (!searchArr.includes(cid)) {
+        //  if it doesn't, push data to search array
+        searchArr.push(cid);
+        //  then build the markers
+        build();
+        //  If there is a duplicate, we must remove, then splice out
+    } else {
+        //  first search for duplicates to catch all possible renditions
+        duplicateArr(searchArr);
+        //  next get the index of the id number to splice from array 
+        let index = searchArr.indexOf(cid);
+        //  splice the duplicate from the array at it's index
+        searchArr.splice(index, 1);
+        //  then rebuild markers without the duplicate
+        build();
+    }
 }
-function build(){
-for (var i = 0; i < searchArr.length; i++) {
+
+//  Build markers
+function build() {
+    
+    for (var i = 0; i < searchArr.length; i++) {
+
+        //  Pull the lat/lon/lng from the firebase database
+        database.ref('location').on('value', function (snapshot) {
+            lat = snapshot.val().lat;
+            lon = snapshot.val().lng;
+            lng = lon;
+
+
+
             //  Create variable holding the search url including parameters
             let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + searchArr[i] + "&radius=10&sort=real_distance&count=5";
 
@@ -200,34 +242,38 @@ for (var i = 0; i < searchArr.length; i++) {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'user-key': 'faf6b95bf12c6d16066378598f219943'
+                    'user-key': '0ea13516979fc38c42e691a08aedc03e'
                 }
             }).then(function (response) {
                 //  Calling the zomato JSON information manipulation
                 zomato(response);
             })
-        
-    
+
+        });//closes out firebase
+
+
         //  Call the array posting method
-                zomato(response);
-            }
-        
-    
-        //  Call the array posting method
+        console.log(searchArr[i]);
         placeMarkers(searchArr[i]);
     }
+}
 
 function placeMarkers(x) {
+
+
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
 
         database.ref('restaurant' + x + ":" + i).on('value', function (snapshot) {
 
+          
             //  Pulling lat and longitude of restuarant from Firebase
-            var myLatLng = new google.maps.LatLng(lat, lng);
+            var myLatLng = snapshot.val().myLatLng;
 
+           console.log(snapshot.val());
             //  Setting the inner text for popper
-            var contentString = snapshot.val().name;
+            var contentString = snapshot.val().name+"<br/><a target=_blank'' href='"+snapshot.val().url+"'>View</a>"+
+                "<br/>Cuisines:"+ snapshot.val().cuisines+"<br/>";
 
             //  Create a new info window when clicked
             var infowindow = new google.maps.InfoWindow({
@@ -243,11 +289,19 @@ function placeMarkers(x) {
                 //  Defines the map as the google.maps window
                 map: map,
                 //  Gives the popper a name
-                title: snapshot.val().name, 
+                title: snapshot.val().name,
                 //  Gives marker id
                 id: cid,
                 //  userkey
-                key: ""
+                key: "",
+                // give marker a price range
+                currency: "$",
+                // url to the restaurant for more info
+                url: "https://www.zomato.com/houston/name",
+                // latitude and longitude for each restaurant
+
+
+
             });
 
             // Push info to markers array for population
@@ -257,20 +311,53 @@ function placeMarkers(x) {
             marker.addListener('click', function () {
                 //  open the info window for selected icon
                 infowindow.open(map, marker);
+                calcRoute(myPosition, snapshot.val().myLatLng);
                 //  closes out the popup after 5 seconds
                 setTimeout(close, 3000);
 
 
-            //  close the popups after an interval
-            function close() {
-                infowindow.close(map, marker);
-            }
+                //  close the popups after an interval
+                function close() {
+                    infowindow.close(map, marker);
+                }
             });
 
-            
-        }) 
+
+        })
     }
 }
+
+var directionsService;
+var directionsDisplay;
+
+function calcRoute(origin, destination) {
+    if(directionsDisplay){
+        directionsDisplay.setDirections({routes: []});
+    }
+    directionsService = new google.maps.DirectionsService;
+    directionsDisplay = new google.maps.DirectionsRenderer;
+    
+    var start = new google.maps.LatLng(origin.lat, origin.lng);
+    var end = new google.maps.LatLng(destination.lat, destination.lng);
+    var bounds = new google.maps.LatLngBounds();
+    bounds.extend(start);
+    bounds.extend(end);
+    map.fitBounds(bounds);
+    var request = {
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING
+    };
+    directionsService.route(request, function (response, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+            directionsDisplay.setMap(map);
+        } else {
+            alert("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6) + " failed: " + status);
+        }
+    });
+}
+
 
 //  ---------------------------------------------------------------------
 
@@ -308,12 +395,12 @@ function zomato(x) {
     }// Closes out the iterating for loop
 
 }
-
+var myPosition;
 //  ---------------------------------------------------------------------
 
 //  Initializes the map
 function initMap(lat, lng) {
-    if (lat == null || lng ==null) {
+    if (lat == null || lng == null) {
         lat = 29.7560;
         lng = -95.3573;
     }
@@ -330,7 +417,7 @@ function initMap(lat, lng) {
     // Try HTML5 geolocation. ------------------------------------------------ need to rember allow location choice
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function (position) {
-            pos = {
+            var pos = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
             };
@@ -340,12 +427,14 @@ function initMap(lat, lng) {
                 lng: position.coords.longitude
             })
 
+            lat = pos.lat;
+            myPosition = pos;
             infoWindow.setPosition(pos);
             infoWindow.setContent('Your Location');
             infoWindow.open(map);
 
             map.setCenter(pos);
-        }, function () { 
+        }, function () {
             handleLocationError(true, infoWindow, map.getCenter());
         });
     } else {
@@ -353,11 +442,9 @@ function initMap(lat, lng) {
         handleLocationError(false, infoWindow, map.getCenter());
     }
 
-    //  Click event to place markers on map
-    $(".legend").off("click").on("click", setMarkers);
-    $("#lg3").on("click", deleteAllMarkers);
-
    
+
+
 }
 
 // Sets the map on all markers in the array.
@@ -406,57 +493,3 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(map);
 } 
-
-
-    // database.ref('favs').on('child_added', function (snapshot) {
-
-    //     cid = snapshot.val().cid;
-    //     // console.log(cid)
-
-    //     if (!searchArr.includes(cid)) {
-    //         //  if it doesn't, push data to search array
-    //         searchArr.push(cid);
-
-    //         //  then build the markers
-    //         console.log("propogate" + searchArr);
-    //         // build();
-    //         //  If there is a duplicate, we must remove, then splice out
-    //     } else {
-    //         //  first search for duplicates to catch all possible renditions
-    //         duplicateArr(searchArr);
-    //         //  next get the index of the id number to splice from array 
-    //         let index = searchArr.indexOf(cid);
-    //         //  splice the duplicate from the array at it's index
-    //         searchArr.splice(index, 1);
-    //         //  then rebuild markers without the duplicate
-    //         console.log("remove duplicate" + searchArr);
-    //         // build();
-    //     }
-
-    //     // 
-
-    // })
-    
-function run() {
-    setFav = true;
-    database.ref('favs').on('value', function (snapshot) {
-    
-    snapshot.forEach(function (childSnapshot) {
-        // for(var i = 0; i < cuisines.length; i++) {
-            
-        // if (childSnapshot.val().cid == cuisines[i].cid && cuisines[i].active == false) {
-        //     cuisines[i].active == true;
-        // }
-        // else if (childSnapshot.val().cid == cuisines[i].cid && cuisines[i].active == true){
-        //     cuisines[i].active == false;
-        //     }
-        if ((childSnapshot.val().cid) == cuisines[0].cid){
-            cuisines[0].active = true;
-            cuisines[0].active = true;
-        }
-        })
-})
-  // drawFlags();   
-   setFav = false;  
-}
-run();
