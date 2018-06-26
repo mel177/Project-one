@@ -1,10 +1,6 @@
 // --------------------------------------------------------------------- <variables>
 var cuisines = [];
 
-
-
-
-
 // --------------------------------------------------------------------- <reset cuisines>
 function resetCuisines() {
 
@@ -13,7 +9,7 @@ function resetCuisines() {
             label: "American",
             code: "flags/us",
             cid: 1,
-            active: false
+            active: true
         },
         {
             label: "Mexican",
@@ -25,7 +21,7 @@ function resetCuisines() {
             label: "Sandwich",
             code: "_sw",
             cid: 304,
-            active: false
+            active: true
         },
         {
             label: "Fast Food",
@@ -43,7 +39,7 @@ function resetCuisines() {
             label: "Tea & Coffee",
             code: "Cafe",
             cid: 161,
-            active: false
+            active: true
         },
         {
             label: "Cuban",
@@ -55,13 +51,13 @@ function resetCuisines() {
             label: "Ice Cream",
             code: "Banana Split",
             cid: 223,
-            active: false
+            active: true
         },
         {
             label: "Indian",
             code: "flags/in",
             cid: 148,
-            active: false
+            active: true
         },
         {
             label: "Sushi",
@@ -148,11 +144,4 @@ function resetCuisines() {
             active: false
         },
     ]
-    // Draw shortcut icons
-    $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);    
-    for (let i = 0; i < cuisines.length; i++) {
-        if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="flag pl-2 pt-2" data-active="active" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png"></div>`)
-        }
-    }
 }

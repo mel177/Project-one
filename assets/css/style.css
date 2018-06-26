@@ -12,12 +12,12 @@ body {
     color: #20229e;
     /*-webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black; */
-    font-size: 18pt;
+    font-size: 16pt;
     background-color: #333333;
 }
 
 .jumbotron {
-    position:absolute;
+    /* position:absolute; */
     left:0px;
     top: 0px;
     z-index:3;
@@ -62,6 +62,7 @@ div#lg3 {
     flex-direction: column-row;
     justify-content: left;
     text-align: right;
+    align-self: flex-end;
 }
 
 .instructions {
