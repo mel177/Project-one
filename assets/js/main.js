@@ -235,7 +235,7 @@ function initMap(lat, lng) {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'user-key': '0ea13516979fc38c42e691a08aedc03e'
+                        'user-key': '77f60fe24c0008b5989016fbe8bd456e'
                     }
                 }).then(function (response) {
                     //  Calling the zomato JSON information manipulation
@@ -271,8 +271,11 @@ function setMarkers() {
     let icon = $(this).attr('src');
     console.log(icon);
 
+    
     //  clear the markers array
     deleteMarkers();
+    
+    
 
     //  Get the cid number from the selected button
     cid = parseInt($(this).attr('data-fav-id'));

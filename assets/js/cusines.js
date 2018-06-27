@@ -21,7 +21,7 @@ function resetCuisines() {
         },        
         {
             label: "Sandwich",
-            code: "_sw",
+            code: "sandwhich",
             cid: 304,
             arr: 2,
             active: true
