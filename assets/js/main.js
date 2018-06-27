@@ -226,7 +226,7 @@ function initMap(lat, lng) {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'user-key': 'faf6b95bf12c6d16066378598f219943'
+                        'user-key': '0ea13516979fc38c42e691a08aedc03e'
                     }
                 }).then(function (response) {
                     //  Calling the zomato JSON information manipulation
@@ -303,12 +303,15 @@ function placeMarkers(x, y) {
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
 
-        console.log(allRest[x]);
+        console.log(allRest[x][i].myLatLng)
 
-        myLatLng = allRest[x][i].myLatLng;
+        var myLatLng = new google.maps.LatLng(parseFloat(allRest[x][i].myLatLng.lat), parseFloat(allRest[x][i].myLatLng.lng));
+
+        // myLatLng = allRest[x][i].myLatLng;
+
 
         //  Setting the inner text for popper
-        var contentString = allRest[x][i].name + "<br/><a target=_blank'' href='" + allRest[x][i].url + "'>View</a>" + "<br/>Cuisines:" + allRest[x][i].cuisines + "<br/>";
+        var contentString = "<div>"+allRest[x][i].name + "<br/><a target=_blank'' href='" + allRest[x][i].url + "'>View</a>" + "<br/>Cuisines:" + allRest[x][i].cuisines + "<br/></div>";
 
         //  Create a new info window when clicked
         var infowindow = new google.maps.InfoWindow({
@@ -330,7 +333,7 @@ function placeMarkers(x, y) {
             //  Defines the map as the google.maps window
             map: map,
             //  Gives the popper a name
-            title: allRest[x][i].name,
+            title: x + "," + i,
             //  Gives marker id
             id: allRest[x][i].id,
             //  userkey
@@ -346,23 +349,9 @@ function placeMarkers(x, y) {
 
         // Push info to markers array for population
         markers.push(marker);
-
-        //  creates listener for the click event of icon
-        marker.addListener('click', function () {
-            //  open the info window for selected icon
-            infowindow.open(map, marker);
-            calcRoute(myPosition, myLatLng);
-            //  closes out the popup after 5 seconds
-            setTimeout(close, 3000);
-
-
-            //  close the popups after an interval
-            function close() {
-                infowindow.close(map, marker);
-            }
-        });
+       
     }
-
+    
 }
 
 
@@ -482,3 +471,22 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(map);
 } 
+
+$(document).on('click', '.gmnoprint', function(){
+
+    
+    let arrIndex = $(this).attr('title');
+
+    if(typeof arrIndex == 'undefined'){
+        console.log("undefined")
+    } else {
+        
+        let res = arrIndex.split(',');
+        let indexOne = parseInt(res[0]);
+        let indexTwo = parseInt(res[1]);
+        let newIndex = allRest[indexOne][indexTwo];
+
+        //  calculate the route to the new location
+        calcRoute(myPosition, newIndex.myLatLng);
+    }
+})
