@@ -481,6 +481,8 @@ $(document).on('click', '.gmnoprint', function(){
         console.log("undefined")
     } else {
         
+
+        console.log(arrIndex)
         let res = arrIndex.split(',');
         let indexOne = parseInt(res[0]);
         let indexTwo = parseInt(res[1]);
@@ -488,5 +490,15 @@ $(document).on('click', '.gmnoprint', function(){
 
         //  calculate the route to the new location
         calcRoute(myPosition, newIndex.myLatLng);
+
+        //  access the item clicked and give an id
+        let div = $('[title|="'+ arrIndex +'"]');
+        div.attr('id', arrIndex);
+
     }
+})
+
+$(document).on('click', '.popper', function(){
+    let index = $(this).attr('title')
+    console.log(index)
 })
