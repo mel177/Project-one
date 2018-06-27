@@ -235,7 +235,7 @@ function initMap(lat, lng) {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'user-key': '77f60fe24c0008b5989016fbe8bd456e'
+                        'user-key': '8257584214d5ad27bc8026723c0adcd0'
                     }
                 }).then(function (response) {
                     //  Calling the zomato JSON information manipulation
@@ -271,7 +271,7 @@ function setMarkers() {
     let icon = $(this).attr('src');
     console.log(icon);
 
-    
+
     //  clear the markers array
     deleteMarkers();
     
