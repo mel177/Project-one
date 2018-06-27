@@ -82,22 +82,22 @@ function drawShortcuts() {
 // --------------------------------------------------------------------- <toggle active>
 function toggleActive() {
     getFavCount();
-    if (favCount >= 5){
+    if (favCount >= 5) {
         $('.messages').empty();
         $('.messages').append('You have reached the 5 favorite limit!');
     } else {
-            setFav = true;
-            let country = $(this).attr('id')
-            for (var i in cuisines) {
-              if (cuisines[i].code == country) {
-                  if ($(this).attr('data-active') == 'active') {
+        setFav = true;
+        let country = $(this).attr('id')
+        for (var i in cuisines) {
+            if (cuisines[i].code == country) {
+                if ($(this).attr('data-active') == 'active') {
                     cuisines[i].active = false;
-                  } else {
+                } else {
                     cuisines[i].active = true;
-                  }
-                 break; //Stop this loop, we found it!
-              }
+                }
+                break; //Stop this loop, we found it!
             }
+        }
         $('.jumbotron').show();
         hideFlags();
         drawFlags();
@@ -105,7 +105,7 @@ function toggleActive() {
         getFavCount();
         setFav = false;
     }
- }
+}
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
@@ -194,7 +194,7 @@ function initMap(lat, lng) {
     });
     infoWindow = new google.maps.InfoWindow;
 
-    for(var i = 0; i < cuisines.length; i++){
+    for (var i = 0; i < cuisines.length; i++) {
         cuisineId.push(cuisines[i].cid)
     }
 
@@ -212,29 +212,29 @@ function initMap(lat, lng) {
                 lng: position.coords.longitude
             })
 
-            for(var i = 0; i < cuisineId.length; i++){
+            for (var i = 0; i < cuisineId.length; i++) {
 
-                    let newLat = pos.lat.toFixed(3)
-                    let newLng = pos.lng.toFixed(3)
+                let newLat = pos.lat.toFixed(3)
+                let newLng = pos.lng.toFixed(3)
 
                 //  Create variable holding the search url including parameters
                 let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + newLat + "&lon=" + newLng + "&cuisines=" + cuisineId[i] + "&radius=1000&sort=real_distance&count=5";
 
-            //  Create Ajax call
-            $.ajax({
-                url: queryURL,
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'user-key': 'faf6b95bf12c6d16066378598f219943'
-                }
-            }).then(function (response) {
-                //  Calling the zomato JSON information manipulation
-                zomato(response);
-            })
-        
-        
-        }
+                //  Create Ajax call
+                $.ajax({
+                    url: queryURL,
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'user-key': '0ea13516979fc38c42e691a08aedc03e'
+                    }
+                }).then(function (response) {
+                    //  Calling the zomato JSON information manipulation
+                    zomato(response);
+                })
+
+
+            }
 
 
             myPosition = pos;
@@ -259,6 +259,9 @@ function initMap(lat, lng) {
 
 function setMarkers() {
 
+    let icon = $(this).attr('src');
+    console.log(icon);
+
     //  clear the markers array
     deleteMarkers();
 
@@ -272,7 +275,7 @@ function setMarkers() {
         //  if it doesn't, push data to search array
         searchArr.push(cid);
         //  then build the markers
-        build();
+        build(icon);
         //  If there is a duplicate, we must remove, then splice out
     } else {
         //  first search for duplicates to catch all possible renditions
@@ -282,89 +285,83 @@ function setMarkers() {
         //  splice the duplicate from the array at it's index
         searchArr.splice(index, 1);
         //  then rebuild markers without the duplicate
-        build();
+        build(icon);
     }
 }
 
 //  Build markers
-function build() {
-    
+function build(x) {
+
     for (var i = 0; i < searchArr.length; i++) {
-        placeMarkers(searchArr[i]);
+        placeMarkers(searchArr[i], x);
     }
 }
 
-function placeMarkers(x) {
+function placeMarkers(x, y) {
 
 
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
-        
-        console.log(allRest[x][i]);
-        
-        myLatLng = allRest[x][i].myLatLng;
 
-            //  Setting the inner text for popper
-            var contentString = allRest[x][i].name + "<br/><a target=_blank'' href='" + allRest[x][i].url + "'>View</a>" + "<br/>Cuisines:" + allRest[x][i].cuisines + "<br/>";
+        console.log(allRest[x][i].myLatLng)
 
-            //  Create a new info window when clicked
-            var infowindow = new google.maps.InfoWindow({
-                //  Inserts the content from content-string defined above
-                content: contentString
-            });
+        var myLatLng = new google.maps.LatLng(parseFloat(allRest[x][i].myLatLng.lat), parseFloat(allRest[x][i].myLatLng.lng));
+
+        // myLatLng = allRest[x][i].myLatLng;
 
 
-            //  Creates a new marker on the map
-            var marker = new google.maps.Marker({
-                //  Pulls the lat and long from declared variable
-                position: myLatLng,
-                //  Defines the map as the google.maps window
-                map: map,
-                //  Gives the popper a name
-                title: allRest[x][i].name,
-                //  Gives marker id
-                id: allRest[x][i].id,
-                //  userkey
-                key: "",
-                // give marker a price range
-                currency: "$",
-                // url to the restaurant for more info
-                url: allRest[x][i].url,
-                // latitude and longitude for each restaurant
+        //  Setting the inner text for popper
+        var contentString = "<div>"+allRest[x][i].name + "<br/><a target=_blank'' href='" + allRest[x][i].url + "'>View</a>" + "<br/>Cuisines:" + allRest[x][i].cuisines + "<br/></div>";
 
+        //  Create a new info window when clicked
+        var infowindow = new google.maps.InfoWindow({
+            //  Inserts the content from content-string defined above
+            content: contentString
+        });
 
+        var icon = {
+            url: y, // url
+            scaledSize: new google.maps.Size(50, 30), // scaled size
+            origin: new google.maps.Point(0, 0), // origin
+            anchor: new google.maps.Point(0, 0) // anchor
+        };
 
-            });
+        //  Creates a new marker on the map
+        var marker = new google.maps.Marker({
+            //  Pulls the lat and long from declared variable
+            position: myLatLng,
+            //  Defines the map as the google.maps window
+            map: map,
+            //  Gives the popper a name
+            title: x + "," + i,
+            //  Gives marker id
+            id: allRest[x][i].id,
+            //  userkey
+            key: "",
+            // give marker a price range
+            currency: "$",
+            // url to the restaurant for more info
+            url: allRest[x][i].url,
+            // latitude and longitude for each restaurant
+            icon: icon
 
-            // Push info to markers array for population
-            markers.push(marker);
+        });
 
-            //  creates listener for the click event of icon
-            marker.addListener('click', function () {
-                //  open the info window for selected icon
-                infowindow.open(map, marker);
-                calcRoute(myPosition, myLatLng);
-                //  closes out the popup after 5 seconds
-                setTimeout(close, 3000);
-
-
-                //  close the popups after an interval
-                function close() {
-                    infowindow.close(map, marker);
-                }
-            });
+        // Push info to markers array for population
+        markers.push(marker);
+       
     }
     
 }
 
 
 function calcRoute(origin, destination) {
-    if(directionsDisplay){
-        directionsDisplay.setDirections({routes: []});
+    if (directionsDisplay) {
+        directionsDisplay.setDirections({ routes: [] });
     }
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
-    
+
     var start = new google.maps.LatLng(origin.lat, origin.lng);
     var end = new google.maps.LatLng(destination.lat, destination.lng);
     var bounds = new google.maps.LatLngBounds();
@@ -474,3 +471,22 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(map);
 } 
+
+$(document).on('click', '.gmnoprint', function(){
+
+    
+    let arrIndex = $(this).attr('title');
+
+    if(typeof arrIndex == 'undefined'){
+        console.log("undefined")
+    } else {
+        
+        let res = arrIndex.split(',');
+        let indexOne = parseInt(res[0]);
+        let indexTwo = parseInt(res[1]);
+        let newIndex = allRest[indexOne][indexTwo];
+
+        //  calculate the route to the new location
+        calcRoute(myPosition, newIndex.myLatLng);
+    }
+})
