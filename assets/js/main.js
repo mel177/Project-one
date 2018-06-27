@@ -158,12 +158,15 @@ let lat = "";
 let lon = "";
 let lng = "";
 let cid = "";
+var myPosition = "";
 var myLatLng = "";
 let cuisineId = [];
 let allRest = [];
 let temp = [];
 let searchArr = [];
 var markers = [];
+var directionsService = "";
+var directionsDisplay = "";
 
 // data object to store click location info
 var data = {
@@ -233,6 +236,8 @@ function initMap(lat, lng) {
         
         }
 
+
+            myPosition = pos;
             infoWindow.setPosition(pos);
             infoWindow.setContent('Your Location');
             infoWindow.open(map);
@@ -283,6 +288,7 @@ function setMarkers() {
 
 //  Build markers
 function build() {
+    
     for (var i = 0; i < searchArr.length; i++) {
         placeMarkers(searchArr[i]);
     }
@@ -294,53 +300,92 @@ function placeMarkers(x) {
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
         
-        console.log(allRest[x][i].myLatLng);
+        console.log(allRest[x][i]);
         
         myLatLng = allRest[x][i].myLatLng;
 
-        //  Setting the inner text for popper
-        var contentString = allRest[x][i].name;
+            //  Setting the inner text for popper
+            var contentString = allRest[x][i].name + "<br/><a target=_blank'' href='" + allRest[x][i].url + "'>View</a>" + "<br/>Cuisines:" + allRest[x][i].cuisines + "<br/>";
 
-        //  Create a new info window when clicked
-        var infowindow = new google.maps.InfoWindow({
-            //  Inserts the content from content-string defined above
-            content: contentString
-        });
-
-
+            //  Create a new info window when clicked
+            var infowindow = new google.maps.InfoWindow({
+                //  Inserts the content from content-string defined above
+                content: contentString
+            });
 
 
-        //  Creates a new marker on the map
-        var marker = new google.maps.Marker({
-            //  Pulls the lat and long from declared variable
-            position: myLatLng,
-            //  Gives the popper a name
-            title: allRest[x][i].name,
-            //  Gives marker id
-            id: allRest[x][i].id
-        });
-
-        marker.setMap(map);
-
-        // Push info to markers array for population
-        markers.push(marker);
-
-        //  creates listener for the click event of icon
-        marker.addListener('click', function () {
-            //  open the info window for selected icon
-            infowindow.open(map, marker);
-            //  closes out the popup after 5 seconds
-            setTimeout(close, 3000);
+            //  Creates a new marker on the map
+            var marker = new google.maps.Marker({
+                //  Pulls the lat and long from declared variable
+                position: myLatLng,
+                //  Defines the map as the google.maps window
+                map: map,
+                //  Gives the popper a name
+                title: allRest[x][i].name,
+                //  Gives marker id
+                id: allRest[x][i].id,
+                //  userkey
+                key: "",
+                // give marker a price range
+                currency: "$",
+                // url to the restaurant for more info
+                url: allRest[x][i].url,
+                // latitude and longitude for each restaurant
 
 
-            //  close the popups after an interval
-            function close() {
-                infowindow.close(map, marker);
-            }
-        });
+
+            });
+
+            // Push info to markers array for population
+            markers.push(marker);
+
+            //  creates listener for the click event of icon
+            marker.addListener('click', function () {
+                //  open the info window for selected icon
+                infowindow.open(map, marker);
+                calcRoute(myPosition, myLatLng);
+                //  closes out the popup after 5 seconds
+                setTimeout(close, 3000);
+
+
+                //  close the popups after an interval
+                function close() {
+                    infowindow.close(map, marker);
+                }
+            });
     }
     
 }
+
+
+function calcRoute(origin, destination) {
+    if(directionsDisplay){
+        directionsDisplay.setDirections({routes: []});
+    }
+    directionsService = new google.maps.DirectionsService;
+    directionsDisplay = new google.maps.DirectionsRenderer;
+    
+    var start = new google.maps.LatLng(origin.lat, origin.lng);
+    var end = new google.maps.LatLng(destination.lat, destination.lng);
+    var bounds = new google.maps.LatLngBounds();
+    bounds.extend(start);
+    bounds.extend(end);
+    map.fitBounds(bounds);
+    var request = {
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING
+    };
+    directionsService.route(request, function (response, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+            directionsDisplay.setMap(map);
+        } else {
+            alert("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6) + " failed: " + status);
+        }
+    });
+}
+
 
 //  ---------------------------------------------------------------------
 
