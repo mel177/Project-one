@@ -18,6 +18,12 @@ firebase.initializeApp(config);
 
 var database = firebase.database(); // Create a variable to reference the database
 
+// popovers Initialization
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
+
+
 // --------------------------------------------------------------------- <variables>
 var favActive = false;
 var setFav = false;
@@ -69,6 +75,7 @@ function getFavCount() {
     // console.log(`favCount = ${favCount}`)
 }
 
+
 // --------------------------------------------------------------------- <draw shortcuts>
 function drawShortcuts() {
     // Draw shortcut icons
@@ -76,9 +83,7 @@ function drawShortcuts() {
     $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div id="${cuisines[i].arr}">Hello</div>`);
-            $(`#${cuisines[i].arr}`).hide();
-            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-popper-msg="Toggle ${cuisines[i].label}" data-active="active"  data-fav-id="${cuisines[i].arr}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].arr}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].arr}"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="${cuisines[i].arr}" data-fav-id="${cuisines[i].arr}" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="${cuisines[i].label}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].arr}"></div>`)
         }
     }
 }
