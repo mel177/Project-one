@@ -24,8 +24,6 @@ resetCuisines();
 hideFlags();
 drawShortcuts();
 
-
-
 // --------------------------------------------------------------------- <save favorites>
 function toggleFavorite() {
     hideFlags();
@@ -35,19 +33,11 @@ function toggleFavorite() {
 
 // --------------------------------------------------------------------- <save favorites>
 function saveFavorites() {
-    hideFlags(); 
-    console.log("saved list" + searchArr)
-}
-
-
-function getFavCount() {
-    favCount = 0;
-    for(let i = 0; i < cuisines.length; i++){
-        if (cuisines[i].active == true) {
-            favCount++
-        }
-    }
-    console.log(`favCount = ${favCount}`)
+    hideFlags();
+    let id = $(this).attr('id')
+    console.log(id) // Benjamin, please create function to save favorite shortcuts to firebase, thanks, Tom    
+    console.log("Saving favorites to database")
+    // Save user favorites to database
 }
 
 
@@ -63,7 +53,6 @@ function restoreDefaults() {
     drawShortcuts();
     setFav = false;
     getFavCount();
-   
 }
 
 
@@ -85,7 +74,7 @@ function drawShortcuts() {
     $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}" data-fav-id="${cuisines[i].cid}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].cid}"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}" data-fav-id="${cuisines[i].arr}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].arr}"></div>`)
         }
     }
 }
@@ -93,48 +82,42 @@ function drawShortcuts() {
 // --------------------------------------------------------------------- <toggle active>
 function toggleActive() {
     getFavCount();
+    if (favCount >= 5){
+        $('.messages').empty();
+        $('.messages').append('You have reached the 5 favorite limit!');
+    } else {
             setFav = true;
             let country = $(this).attr('id')
             for (var i in cuisines) {
               if (cuisines[i].code == country) {
                   if ($(this).attr('data-active') == 'active') {
                     cuisines[i].active = false;
-                    $('#messages').empty();
                   } else {
-                    if (favCount >= 5){
-                        $('#messages').empty();
-                        $('#messages').append('<p>You have reached the 5 favorite limit!</p>');
-                    } else {
-                        cuisines[i].active = true;
-                        $('#messages').empty();
-                    }
+                    cuisines[i].active = true;
                   }
                  break; //Stop this loop, we found it!
-                 $('#messages').empty();
               }
             }
         $('.jumbotron').show();
-        $('.foot').hide();
         hideFlags();
         drawFlags();
         drawShortcuts();
         getFavCount();
         setFav = false;
-        
+    }
  }
 
 // --------------------------------------------------------------------- <show/edit favorites>
 function drawFlags() {
-    
-    console.log('draw flag')
+    // $('#map').hide();
     if (favActive == false || setFav == true) {
         favActive = true;
         $('.jumbotron').show();
-        $('.foot').hide();
+        // $('.fav-picks').append(`<h2>Favorites</h2>`); // not enough room for this
         for (let i = 0; i < cuisines.length; i++) {
             if (cuisines[i].active === true) {
                 active = "active";
-                $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].code}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
+                $('.fav-picks').append(`<div class="flag ${active} pl-2 pt-2" data-active="${active}" id="${cuisines[i].code}"><img class="icon mr-2" data-fav-id="${cuisines[i].arr}" alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png">${cuisines[i].label}</div>`)
             } else {
                 active = "inactive";
             }
@@ -157,7 +140,6 @@ function hideFlags() {
     $('.flags').empty();
     $('.buttons').empty();
     $('.jumbotron').hide();
-    $('.foot').show();
     $('.navbar').empty();
     drawShortcuts();
 }
@@ -165,8 +147,6 @@ function hideFlags() {
 // --------------------------------------------------------------------- <click listeners>
 //  Click event to place markers on map
 $(document).off("click").on("click", ".shortcut .icon", setMarkers);
-$("#lg3").on("click", deleteAllMarkers);
-
 $(document).on("click", '#reset', restoreDefaults);
 $(document).on("click", '#save', saveFavorites);
 $(document).on("click", '.flag', toggleActive);
@@ -178,8 +158,15 @@ let lat = "";
 let lon = "";
 let lng = "";
 let cid = "";
+var myPosition = "";
+var myLatLng = "";
+let cuisineId = [];
+let allRest = [];
+let temp = [];
 let searchArr = [];
 var markers = [];
+var directionsService = "";
+var directionsDisplay = "";
 
 // data object to store click location info
 var data = {
@@ -190,9 +177,88 @@ var data = {
 };
 
 
+
+
+//  Initializes the map
+function initMap(lat, lng) {
+    if (lat == null || lng == null) {
+        lat = 29.7560;
+        lng = -95.3573;
+    }
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {
+            lat: lat, // default location Norris Conference Center
+            lng: lng
+        },
+        zoom: 15
+    });
+    infoWindow = new google.maps.InfoWindow;
+
+    for(var i = 0; i < cuisines.length; i++){
+        cuisineId.push(cuisines[i].cid)
+    }
+
+
+    // Try HTML5 geolocation. ------------------------------------------------ need to rember allow location choice
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            database.ref('location').set({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            })
+
+            for(var i = 0; i < cuisineId.length; i++){
+
+                    let newLat = pos.lat.toFixed(3)
+                    let newLng = pos.lng.toFixed(3)
+
+                //  Create variable holding the search url including parameters
+                let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + newLat + "&lon=" + newLng + "&cuisines=" + cuisineId[i] + "&radius=1000&sort=real_distance&count=5";
+
+            //  Create Ajax call
+            $.ajax({
+                url: queryURL,
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'user-key': 'faf6b95bf12c6d16066378598f219943'
+                }
+            }).then(function (response) {
+                //  Calling the zomato JSON information manipulation
+                zomato(response);
+            })
+        
+        
+        }
+
+
+            myPosition = pos;
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Your Location');
+            infoWindow.open(map);
+
+            map.setCenter(pos);
+        }, function () {
+            handleLocationError(true, infoWindow, map.getCenter());
+        });
+    } else {
+        // Browser doesn't support Geolocation
+        handleLocationError(false, infoWindow, map.getCenter());
+    }
+
+}
+
+
+
 //  --------------------------------------------------------------------- 
 
 function setMarkers() {
+
     //  clear the markers array
     deleteMarkers();
 
@@ -224,36 +290,6 @@ function setMarkers() {
 function build() {
     
     for (var i = 0; i < searchArr.length; i++) {
-
-        //  Pull the lat/lon/lng from the firebase database
-        database.ref('location').on('value', function (snapshot) {
-            lat = snapshot.val().lat;
-            lon = snapshot.val().lng;
-            lng = lon;
-
-
-
-            //  Create variable holding the search url including parameters
-            let queryURL = "https://developers.zomato.com/api/v2.1/search?lat=" + lat + "&lon=" + lon + "&cuisines=" + searchArr[i] + "&radius=10&sort=real_distance&count=5";
-
-            //  Create Ajax call
-            $.ajax({
-                url: queryURL,
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'user-key': '0ea13516979fc38c42e691a08aedc03e'
-                }
-            }).then(function (response) {
-                //  Calling the zomato JSON information manipulation
-                zomato(response);
-            })
-
-        });//closes out firebase
-
-
-        //  Call the array posting method
-        console.log(searchArr[i]);
         placeMarkers(searchArr[i]);
     }
 }
@@ -263,17 +299,13 @@ function placeMarkers(x) {
 
     //  Loop through the restuarants pulled from firebase
     for (var i = 0; i < 5; i++) {
+        
+        console.log(allRest[x][i]);
+        
+        myLatLng = allRest[x][i].myLatLng;
 
-        database.ref('restaurant' + x + ":" + i).on('value', function (snapshot) {
-
-          
-            //  Pulling lat and longitude of restuarant from Firebase
-            var myLatLng = snapshot.val().myLatLng;
-
-           console.log(snapshot.val());
             //  Setting the inner text for popper
-            var contentString = snapshot.val().name+"<br/><a target=_blank'' href='"+snapshot.val().url+"'>View</a>"+
-                "<br/>Cuisines:"+ snapshot.val().cuisines+"<br/>";
+            var contentString = allRest[x][i].name + "<br/><a target=_blank'' href='" + allRest[x][i].url + "'>View</a>" + "<br/>Cuisines:" + allRest[x][i].cuisines + "<br/>";
 
             //  Create a new info window when clicked
             var infowindow = new google.maps.InfoWindow({
@@ -289,15 +321,15 @@ function placeMarkers(x) {
                 //  Defines the map as the google.maps window
                 map: map,
                 //  Gives the popper a name
-                title: snapshot.val().name,
+                title: allRest[x][i].name,
                 //  Gives marker id
-                id: cid,
+                id: allRest[x][i].id,
                 //  userkey
                 key: "",
                 // give marker a price range
                 currency: "$",
                 // url to the restaurant for more info
-                url: "https://www.zomato.com/houston/name",
+                url: allRest[x][i].url,
                 // latitude and longitude for each restaurant
 
 
@@ -311,7 +343,7 @@ function placeMarkers(x) {
             marker.addListener('click', function () {
                 //  open the info window for selected icon
                 infowindow.open(map, marker);
-                calcRoute(myPosition, snapshot.val().myLatLng);
+                calcRoute(myPosition, myLatLng);
                 //  closes out the popup after 5 seconds
                 setTimeout(close, 3000);
 
@@ -321,14 +353,10 @@ function placeMarkers(x) {
                     infowindow.close(map, marker);
                 }
             });
-
-
-        })
     }
+    
 }
 
-var directionsService;
-var directionsDisplay;
 
 function calcRoute(origin, destination) {
     if(directionsDisplay){
@@ -362,6 +390,7 @@ function calcRoute(origin, destination) {
 //  ---------------------------------------------------------------------
 
 function zomato(x) {
+    temp = [];
 
     //  Iterate through the JSON retrived from zomato
     //  Push zomato JSON to firebase
@@ -390,62 +419,14 @@ function zomato(x) {
         }   //  Closes the restaurant variable
 
         //  Push the data from Zomato to Firebase
-        database.ref('restaurant' + cid + ":" + i).set(restaurant);
+        temp.push(restaurant);
 
     }// Closes out the iterating for loop
+    allRest.push(temp);
 
 }
-var myPosition;
+
 //  ---------------------------------------------------------------------
-
-//  Initializes the map
-function initMap(lat, lng) {
-    if (lat == null || lng == null) {
-        lat = 29.7560;
-        lng = -95.3573;
-    }
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: {
-            lat: lat, // default location Norris Conference Center
-            lng: lng
-        },
-        zoom: 15
-    });
-    infoWindow = new google.maps.InfoWindow;
-
-
-    // Try HTML5 geolocation. ------------------------------------------------ need to rember allow location choice
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-
-            database.ref('location').set({
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            })
-
-            lat = pos.lat;
-            myPosition = pos;
-            infoWindow.setPosition(pos);
-            infoWindow.setContent('Your Location');
-            infoWindow.open(map);
-
-            map.setCenter(pos);
-        }, function () {
-            handleLocationError(true, infoWindow, map.getCenter());
-        });
-    } else {
-        // Browser doesn't support Geolocation
-        handleLocationError(false, infoWindow, map.getCenter());
-    }
-
-   
-
-
-}
 
 // Sets the map on all markers in the array.
 function setMapOnAll(map) {
