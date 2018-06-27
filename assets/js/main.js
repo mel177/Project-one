@@ -1,3 +1,7 @@
+// popovers Initialization
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
 // --------------------------------------------------------------------- <variables>
 // Init Firebase
 var map, infoWindow;
@@ -14,6 +18,12 @@ firebase.initializeApp(config);
 
 var database = firebase.database(); // Create a variable to reference the database
 
+// popovers Initialization
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
+
+
 // --------------------------------------------------------------------- <variables>
 var favActive = false;
 var setFav = false;
@@ -26,9 +36,7 @@ drawShortcuts();
 
 // --------------------------------------------------------------------- <save favorites>
 function toggleFavorite() {
-    hideFlags();
-    let id = $(this).attr('id')
-    console.log(id) // Melinh, please create function to toggle favorites on the map when one of a favorite icons is clicked. thanks, Tom
+    hideFlags();// Melinh, please create function to toggle favorites on the map when one of a favorite icons is clicked. thanks, Tom
 }
 
 // --------------------------------------------------------------------- <save favorites>
@@ -67,6 +75,7 @@ function getFavCount() {
     // console.log(`favCount = ${favCount}`)
 }
 
+
 // --------------------------------------------------------------------- <draw shortcuts>
 function drawShortcuts() {
     // Draw shortcut icons
@@ -74,7 +83,7 @@ function drawShortcuts() {
     $('.navbar').append(`<img class="icon" src="assets/img/favicons/favicon-96x96.png" id="FüdMeh">`);
     for (let i = 0; i < cuisines.length; i++) {
         if (cuisines[i].active === true) {
-            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="shortcut-${cuisines[i].code}" data-fav-id="${cuisines[i].arr}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].arr}"></div>`)
+            $('.navbar').append(`<div class="shortcut pl-2 pt-2" data-active="active" id="${cuisines[i].arr}" data-fav-id="${cuisines[i].arr}" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="${cuisines[i].label}"><img class="icon mr-2"  alt="${cuisines[i].label}" data-label="${cuisines[i].label}" data-search="${cuisines[i].search}" src="assets/img/icons/${cuisines[i].code}.png" data-fav-id="${cuisines[i].arr}"></div>`)
         }
     }
 }
@@ -337,7 +346,7 @@ function placeMarkers(x, y) {
             //  Gives marker id
             id: allRest[x][i].id,
             //  userkey
-            key: "",
+            key: "hello",
             // give marker a price range
             currency: "$",
             // url to the restaurant for more info
@@ -481,6 +490,8 @@ $(document).on('click', '.gmnoprint', function(){
         console.log("undefined")
     } else {
         
+
+        console.log(arrIndex)
         let res = arrIndex.split(',');
         let indexOne = parseInt(res[0]);
         let indexTwo = parseInt(res[1]);
@@ -488,5 +499,19 @@ $(document).on('click', '.gmnoprint', function(){
 
         //  calculate the route to the new location
         calcRoute(myPosition, newIndex.myLatLng);
+
+        var contentString = newIndex.name;
+
+
+        //  access the item clicked and give an id
+        let div = $('[title|="'+ arrIndex +'"]');
+        div.append(`<div id="${arrIndex}">`)
+        div.attr('z-index', 0).attr('data-toggle', 'popover').attr('data-placement','top').attr('data-trigger', 'focus').attr('data-content', 'contentString');
+
     }
+})
+
+$(document).on('click', '.popper', function(){
+    let index = $(this).attr('title')
+    console.log(index)
 })
